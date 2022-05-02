@@ -65,13 +65,16 @@ public class Lexer {
                 }
             }
         }
-        try {  checkToken();   }
-        catch (Exception e) {
-            hasErrors = true;
-            System.out.println(e.getMessage());
-            tokens.clear();
-        }
 
+        if (!hasErrors) {
+            try {
+                checkToken();
+            } catch (Exception e) {
+                hasErrors = true;
+                System.out.println(e.getMessage());
+                tokens.clear();
+            }
+        }
     }
 
     public int delta(char c) throws Exception{

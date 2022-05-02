@@ -1,1 +1,18 @@
-inpu("123123456987ASDA")
+if input (and(0, 0) ) then {
+    x           :=          0;
+
+} else {
+    x := -999;
+    return;
+    halt;
+}
+
+                                    output
+           bool         or
+arr string[false] isheanesu;
+
+
+
+
+while(input(100)) do { string name := "COS341 GUYS"; }
+
