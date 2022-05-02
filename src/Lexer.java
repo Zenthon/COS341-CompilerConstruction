@@ -112,6 +112,8 @@ public class Lexer {
                     if (Character.isWhitespace(c) || Character.isUpperCase(c) || Character.isDigit(c)) return 7;
                     throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " is invalid for ShortStrings");
             }
+            throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " has no transition");
+
         }
         throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " is not part of the alphabet");
     }

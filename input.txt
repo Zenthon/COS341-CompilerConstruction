@@ -10,9 +10,20 @@ if input (and(0, 0) ) then {
                                     output
            bool         or
 arr string[false] isheanesu;
+            larger, eq, add, sub, not,
+                                                                    until
+                                                                    until012
+     proc
+        main
+        halt
+        dfsgsdgs
 
 
+
+                                                            int[] x := new int[10];
 
 
 while(input(100)) do { string name := "COS341 GUYS"; }
-
+call
+""                              "ISHE DIRAI 0"
+"ISHE DZINGIRAI"
