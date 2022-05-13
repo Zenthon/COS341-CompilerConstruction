@@ -1,0 +1,150 @@
+S -> A main { B halt ; C }
+A -> epsilon    |   D , A
+D -> proc userDefinedName { A B return ; C }
+B -> epsilon    |   E ; B
+E -> F  |   G   |   I   |   L
+F -> J := K
+G -> if ( K ) then { B } H
+H -> epsilon    |   else { B }
+I -> do { B } until ( K )       |       while ( K ) do { B }
+J -> output     |   M   |   N
+K -> O  |   M   |   N   |   P   |   Q
+L -> call userDefinedName
+M -> userDefinedName
+N -> userDefinedName [ Z
+Z -> M ] | O ]
+O -> ShortString    |   Number      |   true    |   false
+P -> input ( M )    |   not ( K )
+Q -> and ( K , K )  |   or ( K , K )    |   eq ( K , K )    |   larger ( K , K )    |    add ( K , K )      |   sub ( K , K )   |   mult ( K , K )
+C -> epsilon    |   R ; C
+R -> T M    |       arr T [ O ] M
+T -> num    |   bool    |   string
+
+
+
+// Nullable
+Nullable(S) = false
+Nullable(A) = true
+Nullable(D) = false
+Nullable(B) = true
+Nullable(E) = false
+Nullable(F) = false
+Nullable(G) = false
+Nullable(H) = false
+Nullable(I) = false
+Nullable(J) = false
+Nullable(K) = false
+Nullable(L) = false
+Nullable(M) = false
+Nullable(N) = false
+Nullable(Z) = false
+Nullable(O) = false
+Nullable(P) = false
+Nullable(Q) = false
+Nullable(C) = true
+Nullable(R) = false
+Nullable(T) = false
+
+
+// First
+FIRST(S)    =   FIRST(A) or FIRST(main)
+            =   {proc} or {main}
+            =   {main, proc}
+
+
+FIRST(A)    =   FIRST(epsilon) or FIRST(D, A)
+            =   {} or FIRST(D)
+            =   {proc}
+
+
+FIRST(D)    =   FIRST(proc userDefinedName { A B return ; C })
+            =   FIRST(proc)
+            =   {proc}
+
+
+FIRST(B)    =   FIRST(epsilon) or FIRST(E ; B)
+            =   {} or FIRST(E)
+            =   {output, userDefinedName, if, do, while, call}
+
+
+FIRST(E)    =   FIRST(F) or FIRST(G) or FIRST(I) or FIRST(L)
+            =   {output, userDefinedName} or {if} or {do, while} or {call}
+            =   {output, userDefinedName, if, do, while, call}
+
+
+FIRST(F)    =   FIRST(J := K)
+            =   FIRST(J)
+            =   {output, userDefinedName}
+
+
+FIRST(G)    =   FIRST(if ( K ) then { B } H)
+            =   FIRST(if)
+            =   {if}
+
+
+FIRST(H)    =   FIRST(epsilon) or FIRST( else { B } )
+            =   {} or First(else)
+            =   {else}
+
+
+FIRST(I)    =   FIRST( do { B } until ( K ) ) or FIRST( while ( K ) do { B } )
+            =   FIRST(do) or FIRST(while) 
+            =   {do, while}
+
+
+FIRST(J)    =   FIRST(output) or FIRST(M) or FIRST(N)
+            =   {output} or {userDefinedName} or {userDefinedName}
+            =   {output, userDefinedName}
+
+
+FIRST(K)    =   FIRST(O) or FIRST(M) or FIRST(N) or FIRST(P) or FIRST(Q)
+            =   {ShortString, Number, true, false} or {userDefinedName} or {input, not} or {and, or, eq, larger, add, sub, mult}
+            =   {ShortString, Number, true, false, userDefinedName, input, not, and, or, eq, larger, add, sub, mult}
+
+
+FIRST(L)    =   FIRST(call userDefinedName)
+            =   FIRST(call)
+            =   {call}
+
+
+FIRST(M)    =   FIRST(userDefinedName)
+            =   {userDefinedName}
+
+
+FIRST(N)    =   FIRST(userDefinedName [ Z)
+            =   FIRST(userDefinedName)
+            =   {userDefinedName}
+
+
+FIRST(Z)    =   FIRST( M ]) or FIRST( O ])
+            =   {userDefinedName} or {ShortString, Number, true, false}
+            =   {userDefinedName, ShortString, Number, true, false}
+
+FIRST(O)    =   FIRST(ShortString) or FIRST(Number) or FIRST(true) or FIRST(false)
+            =   {ShortString, Number, true, false}
+
+
+FIRST(P)    =   FIRST( input ( M ) ) or FIRST( not ( K ) )
+            =   FIRST(input) or FIRST(not)
+            =   {input, not}
+
+
+FIRST(Q)    =   FIRST( and ( K , K ) ) or FIRST( or ( K , K ) ) or FIRST( eq ( K , K ) ) or FIRST( larger ( K , K ) ) or FIRST( add ( K , K ) ) 
+                or FIRST( sub ( K , K ) ) or FIRST( mult ( K , K ) )
+            =   FIRST(and) or FIRST(or) or FIRST(eq) or FIRST(larger) or FIRST(add) or FIRST(sub) or FIRST(sub)
+            =   {and, or, eq, larger, add, sub, mult}
+
+
+FIRST(C)    =   FIRST(epsilon) or FIRST(R ; C)
+            =   {} or FIRST(R)
+            =   {bool, num, string, arr}
+
+
+FIRST(R)    =   FIRST(T M) or FIRST(arr T [ O ] M)
+            =   FIRST(T) or FIRST(arr)
+            =   {bool, num, string} or {arr}
+            =   {bool, num, string, arr}
+
+
+FIRST(T)    =   FIRST(bool) or FIRST(num) or FIRST(string)
+            =   {bool, num, string}

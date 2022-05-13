@@ -12,12 +12,13 @@ public class Lexer {
     private int numQuoteMarks = 0;
 
     private boolean hasErrors = false;
-
+    private static int counter = 0;
     public List<Token> tokens  = new LinkedList<>();;
     public int tokenId = 1;
     private final char[] alphabet = "\"-{}()[],:;=".toCharArray();
 
     public Lexer(String inputText) {
+
         inputText = inputText.replaceAll("[}]", " } ");
         inputText = inputText.replaceAll("[{]", " { ");
         inputText = inputText.replaceAll("[(]", " ( ");
@@ -91,31 +92,31 @@ public class Lexer {
                     }
                     if (c == '-') return 5;
                     if (Character.isDigit(c)) return 1;
-                    throw new LexicalException("No token starts with the character '" + c + "' on line " + lineNumber + " position " + currentPosition);
+                    throw new LexicalException("No token starts with the character '" + c + "' on line " + lineNumber);
                 case 1:
                     if (Character.isDigit(c)) return 1;
-                    throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " is not a digit");
+                    throw new LexicalException("The character '" + c + "' on line " + lineNumber + " is not a digit");
                 case 3:
                     if (Character.isDigit(c) || Character.isLowerCase(c)) return 3;
-                    throw new LexicalException("User defined name cannot contain the character '" + c + "' on line " + lineNumber + " position " + currentPosition);
+                    throw new LexicalException("User defined name cannot contain the character '" + c + "' on line " + lineNumber);
                 case 4:
                     if (c == '=') return 2;
-                    throw new LexicalException("The character '" + c + "\' is invalid after ':' on line " + lineNumber + " position " + currentPosition);
+                    throw new LexicalException("The character '" + c + "\' is invalid after ':' on line " + lineNumber);
                 case 5:
                     if (c != '0' && Character.isDigit(c)) return 1;
-                    throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " is not a positive digit");
+                    throw new LexicalException("The character '" + c + "' on line " + lineNumber + " is not a positive digit");
                 case 7:
                     if (c == '\"') {
                         numQuoteMarks = 2;
                         return 2;
                     }
                     if (Character.isWhitespace(c) || Character.isUpperCase(c) || Character.isDigit(c)) return 7;
-                    throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " is invalid for ShortStrings");
+                    throw new LexicalException("The character '" + c + "' on line " + lineNumber + " is invalid for ShortStrings");
             }
-            throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " has no transition");
+            throw new LexicalException("The character '" + c + "' on line " + lineNumber + " has no transition");
 
         }
-        throw new LexicalException("The character '" + c + "' on line " + lineNumber + " position " + currentPosition + " is not part of the alphabet");
+        throw new LexicalException("The character '" + c + "' on line " + lineNumber + " is not part of the alphabet");
     }
 
     public boolean isInAlphabet(char c, char[] array) {
@@ -129,7 +130,7 @@ public class Lexer {
     public void state2() throws LexicalException {
         if (str.contains("\"")) {
             if (str.length() > 17)
-                throw  new LexicalException("Short string must be a maximum of 15 characters long on line " + lineNumber + " position " + currentPosition);
+                throw  new LexicalException("Short string must be a maximum of 15 characters long on line " + lineNumber);
             numQuoteMarks = 0;
             tokens.add(new Token(tokenId++, TokenType.token_shortstring.name().toUpperCase(), str));
         }
@@ -164,10 +165,10 @@ public class Lexer {
                 }
             }
             else if (state == 3) state3();
-            else if (state == 4) throw new LexicalException("The character ':' on line " + lineNumber + " position " + currentPosition + " is missing a '= after it");
-            else if (state == 5) throw new LexicalException("The character '-' on line " + lineNumber + " position " + currentPosition + " is missing positive digit(s) in front of it");
+            else if (state == 4) throw new LexicalException("The character ':' on line " + lineNumber + " is missing a '= after it");
+            else if (state == 5) throw new LexicalException("The character '-' on line " + lineNumber + " is missing positive digit(s) in front of it");
             else if (state == 7)
-                throw  new LexicalException("Short string missing closing quotation marks on line " + lineNumber + " position " + currentPosition);
+                throw  new LexicalException("Short string missing closing quotation marks on line " + lineNumber);
             str ="";
         }
     }
