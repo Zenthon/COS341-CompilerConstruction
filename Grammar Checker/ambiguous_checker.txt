@@ -1,3 +1,4 @@
+V -> S$
 S -> A main { B halt ; C }
 A -> epsilon    |   D , A
 D -> proc userDefinedName { A B return ; C }
@@ -148,3 +149,87 @@ FIRST(R)    =   FIRST(T M) or FIRST(arr T [ O ] M)
 
 FIRST(T)    =   FIRST(bool) or FIRST(num) or FIRST(string)
             =   {bool, num, string}
+
+
+//  Follow
+FOLOW(S)    =   {$}
+
+
+FOLOW(A)    =   {main} or FIRST(B) or {return}
+            =   {main, return} or {output, userDefinedName, if, do, while, call}
+            =   {main, return, output, userDefinedName, if, do, while, call}
+
+
+FOLOW(D)    =   {,}
+
+
+FOLOW(B)    =   {halt} or {return} or { } }
+            =   {halt, return, } }
+
+
+FOLOW(E)    =   {;}
+
+
+FOLOW(F)    =   FOLLOW(E)
+            =   {;}
+
+
+FOLOW(G)    =   FOLLOW(E)
+            =   {;}
+
+
+FOLOW(H)    =   FOLLOW(G)
+            =   {;}
+
+
+FOLOW(I)    =   FOLLOW(E)
+            =   {;}
+
+
+FOLOW(J)    =   { := }
+
+
+FOLOW(K)    =   FOLLOW(F) or { ) } or { , }
+            =   { ;, ), , }
+
+
+FOLOW(L)    =   FOLLOW(E)
+            =   {;}
+
+
+FOLOW(M)    =   FOLLOW(J) or FOLLOW(K) or { ] } or { ) } or FOLLOW(R)
+            =   { := } or { ;, ), , } or { ] } or { ) } or  {;}
+            =   {:=, ;, ), ], ,}
+
+
+FOLOW(N)    =   FOLLOW(J) or FOLLOW(K)
+            =   {;, ), ,} or { := }
+            =   {; ,), :=, ,}
+
+
+FOLOW(Z)    =   FOLLOW(N)
+            =   {; ,), :=, ,}
+
+
+FOLOW(O)    =   FOLLOW(K) or { ] }
+            =   { ;, ), , } or { ] }
+            =   {;, ), ], ,}
+
+
+FOLOW(P)    =   FOLLOW(K)
+            =   { ;, ), , }
+
+
+FOLOW(Q)    =   FOLLOW(K)
+            =   { ;, ), , }   
+
+
+FOLOW(C)    =   { } } 
+
+
+FOLOW(R)    =   {;}
+
+
+FOLOW(T)    =   FIRST(M) or { [ }
+            =   {userDefinedName} or { [ }
+            =   { userDefinedName, [ }
