@@ -1,4 +1,4 @@
-V -> S$
+V -> S $
 S -> A main { B halt ; C }
 A -> epsilon    |   D , A
 D -> proc userDefinedName { A B return ; C }
@@ -152,84 +152,282 @@ FIRST(T)    =   FIRST(bool) or FIRST(num) or FIRST(string)
 
 
 //  Follow
-FOLOW(S)    =   {$}
+FOLLOW(S)    =   {$}
 
 
-FOLOW(A)    =   {main} or FIRST(B) or {return}
+FOLLOW(A)    =   {main} or FIRST(B) or {return}
             =   {main, return} or {output, userDefinedName, if, do, while, call}
             =   {main, return, output, userDefinedName, if, do, while, call}
 
 
-FOLOW(D)    =   {,}
+FOLLOW(D)    =   {,}
 
 
-FOLOW(B)    =   {halt} or {return} or { } }
+FOLLOW(B)    =   {halt} or {return} or { } }
             =   {halt, return, } }
 
 
-FOLOW(E)    =   {;}
+FOLLOW(E)    =   {;}
 
 
-FOLOW(F)    =   FOLLOW(E)
+FOLLOW(F)    =   FOLLOW(E)
             =   {;}
 
 
-FOLOW(G)    =   FOLLOW(E)
+FOLLOW(G)    =   FOLLOW(E)
             =   {;}
 
 
-FOLOW(H)    =   FOLLOW(G)
+FOLLOW(H)    =   FOLLOW(G)
             =   {;}
 
 
-FOLOW(I)    =   FOLLOW(E)
+FOLLOW(I)    =   FOLLOW(E)
             =   {;}
 
 
-FOLOW(J)    =   { := }
+FOLLOW(J)    =   { := }
 
 
-FOLOW(K)    =   FOLLOW(F) or { ) } or { , }
+FOLLOW(K)    =   FOLLOW(F) or { ) } or { , }
             =   { ;, ), , }
 
 
-FOLOW(L)    =   FOLLOW(E)
+FOLLOW(L)    =   FOLLOW(E)
             =   {;}
 
 
-FOLOW(M)    =   FOLLOW(J) or FOLLOW(K) or { ] } or { ) } or FOLLOW(R)
+FOLLOW(M)    =   FOLLOW(J) or FOLLOW(K) or { ] } or { ) } or FOLLOW(R)
             =   { := } or { ;, ), , } or { ] } or { ) } or  {;}
             =   {:=, ;, ), ], ,}
 
 
-FOLOW(N)    =   FOLLOW(J) or FOLLOW(K)
+FOLLOW(N)    =   FOLLOW(J) or FOLLOW(K)
             =   {;, ), ,} or { := }
             =   {; ,), :=, ,}
 
 
-FOLOW(Z)    =   FOLLOW(N)
+FOLLOW(Z)    =   FOLLOW(N)
             =   {; ,), :=, ,}
 
 
-FOLOW(O)    =   FOLLOW(K) or { ] }
+FOLLOW(O)    =   FOLLOW(K) or { ] }
             =   { ;, ), , } or { ] }
             =   {;, ), ], ,}
 
 
-FOLOW(P)    =   FOLLOW(K)
+FOLLOW(P)    =   FOLLOW(K)
             =   { ;, ), , }
 
 
-FOLOW(Q)    =   FOLLOW(K)
+FOLLOW(Q)    =   FOLLOW(K)
             =   { ;, ), , }   
 
 
-FOLOW(C)    =   { } } 
+FOLLOW(C)    =   { } } 
 
 
-FOLOW(R)    =   {;}
+FOLLOW(R)    =   {;}
 
 
-FOLOW(T)    =   FIRST(M) or { [ }
+FOLLOW(T)    =   FIRST(M) or { [ }
             =   {userDefinedName} or { [ }
             =   { userDefinedName, [ }
+
+
+//  LookAhead Sets
+LA (S -> A main { B halt ; C })                                             =   FIRST(A) or {main}
+                                                                            =   {proc} or {main}
+                                                                            =   {main, proc)
+
+
+LA (A -> epsilon)                                                           =   FIRST(epsilon) or FOLLOW(A)
+                                                                            =   {main, return, output, userDefinedName, if, do, while, call}   
+
+
+LA (A -> D , A)                                                             =   FIRST(D)
+                                                                            =   {proc}
+
+
+LA (D -> proc userDefinedName { A B return ; C } )                          =   FIRST(proc)
+                                                                            =   {proc}
+
+
+LA (B -> epsilon)                                                           =   FIRST(epsilon) or FOLLOW(B)
+                                                                            =   {halt, return, } }    
+
+
+LA (B -> E ; B)                                                             =   FIRST(E)
+                                                                            =   {output, userDefinedName, if, do, while, call}
+
+
+LA (E -> F)                                                                 =   FIRST(F)
+                                                                            =   {output, userDefinedName}
+
+
+LA (E -> G)                                                                 =   FIRST(G)
+                                                                            =   {if}
+
+
+LA (E -> I)                                                                 =   FIRST(I)
+                                                                            =   {do, while}
+
+
+LA (E -> L)                                                                 =   FIRST(L)
+                                                                            =   {call}
+
+
+LA (F -> J := K)                                                            =   FIRST(J)
+                                                                            =   {output, userDefinedName}
+
+
+LA (G -> if ( K ) then { B } H)                                             =   FIRST(if)
+                                                                            =   {if}
+
+
+LA (H -> epsilon)                                                           =   FIRST(epsilon) or FOLLOW(H)
+                                                                            =   {;}
+
+
+LA (H -> else { B })                                                        =   FIRST(else)
+                                                                            =   {else}
+
+
+LA (I -> do { B } until ( K ) )                                             =   FIRST(do)       
+                                                                            =   {do}
+
+
+LA (I -> while ( K ) do { B })                                              =   FIRST(while)
+                                                                            =   {while}
+
+
+LA (J -> output)                                                            =   FIRST(output)
+                                                                            =   {output}     
+
+
+LA (J -> M)                                                                 =   FIRST(M)
+                                                                            =   {userDefinedName}
+
+
+LA (J -> N)                                                                 =   FIRST(N)
+                                                                            =   {userDefinedName}
+
+
+LA (K -> O)                                                                 =   FIRST(O)
+                                                                            =   {ShortString, Number, true, false}    
+
+
+LA (K -> M)                                                                 =   FIRST(M)
+                                                                            =   {userDefinedName}
+
+
+LA (K -> N)                                                                 =   FIRST(N)
+                                                                            =   {userDefinedName}
+
+
+LA (K -> P)                                                                 =   FIRST(P)
+                                                                            =   {input, not}
+
+
+LA (K -> Q)                                                                 =   FIRST(Q)
+                                                                            =   {and, or, eq, larger, add, sub, mult}
+
+
+LA (L -> call userDefinedName)                                              =   FIRST(call)
+                                                                            =   {call}
+
+
+LA (M -> userDefinedName)                                                   =   FIRST(userDefinedName)
+                                                                            =   {userDefinedName}
+
+
+LA (N -> userDefinedName [ Z)                                               =   FIRST(userDefinedName)
+                                                                            =   {userDefinedName}
+
+
+LA (Z -> M ])                                                               =   FIRST(M)
+                                                                            =   {userDefinedName}
+
+
+LA (Z -> O ])                                                               =   FIRST(O)
+                                                                            =   {ShortString, Number, true, false}
+
+
+LA (O -> ShortString)                                                       =   FIRST(ShortString)
+                                                                            =   {ShortString}
+
+
+LA (O -> Number                                                             =   FIRST(Number)
+                                                                            =   {Number}
+
+
+LA (O -> true)                                                              =   FIRST(true)
+                                                                            =   {true}                                                              
+
+
+LA (O -> false)                                                             =   FIRST(false)
+                                                                            =   {false}
+
+
+LA (P -> input ( M ) )                                                      =   FIRST(input)
+                                                                            =   {input}   
+
+
+LA (P -> not ( K ) )                                                        =   FIRST(not)
+                                                                            =   {not}
+
+
+LA (Q -> and ( K , K ) )                                                    =   FIRST(and)
+                                                                            =   {and}
+
+
+LA (Q -> or ( K , K ) )                                                     =   FIRST(or)
+                                                                            =   {or}
+
+
+LA (Q -> eq ( K , K ) )                                                     =   FIRST(eq)
+                                                                            =   {eq}
+
+
+LA (Q -> larger ( K , K ) )                                                 =   FIRST(larger)
+                                                                            =   {larger}
+
+
+LA (Q -> add ( K , K ) )                                                    =   FIRST(add)
+                                                                            =   {add}
+
+
+LA (Q -> sub ( K , K ) )                                                    =   FIRST(sub)
+                                                                            =   {sub}
+
+
+LA (Q -> mult ( K , K ) )                                                   =   FIRST(mult)
+                                                                            =   {mult}
+
+
+LA (C -> epsilon )                                                          =   FIRST(epsilon) or FOLLOW(C)
+                                                                            =   { } }
+
+
+LA (C -> R ; C)                                                             =   FIRST(R)
+                                                                            =   {bool, num, string, arr}
+
+
+LA (R -> T M)                                                               =   FIRST(T)
+                                                                            =   {bool, num, string}
+
+
+LA (R -> arr T [ O ] M)                                                     =   FIRST(arr)
+                                                                            =   {arr}
+
+
+LA (T -> num)                                                               =   FIRST(num)
+                                                                            =   {num}
+
+
+LA (T -> bool)                                                              =   FIRST(bool)
+                                                                            =   {bool}
+
+
+LA (T -> string)                                                            =   FIRST(string)
+                                                                            =   {string}                                                            

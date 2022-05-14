@@ -20,13 +20,20 @@ public class Main {
             lexer.process();
 
             // Check if lexer has errors. If not, get the tokens
-            if (!lexer.isHasErrors())
-                for (Token t : lexer.tokens)
-                    System.out.println(t.tokenFormat());
+            if (!lexer.isHasErrors()) {
+                Parser parser = new Parser(lexer.tokens);
+                parser.parseGrammar();
+                if (!parser.getHasErrors())
+                    treeToXML(parser.getXmlString());
+            }
 
         }
         catch (IOException e) {
             System.out.println("Failed to read file to string.");
+        } catch (ParserConfigurationException | TransformerException | SAXException e) {
+            e.printStackTrace();
+        } catch (ParserException e) {
+            System.out.println(e.getMessage());;
         }
     }
 

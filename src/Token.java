@@ -53,7 +53,8 @@ enum TokenType {
     token_rightbracket("]"),
     token_var("userDefinedName"),
     token_number("number"),
-    token_shortstring("shortString");
+    token_shortstring("shortString"),
+    token_eof("$");
 
     final String token_name;
 

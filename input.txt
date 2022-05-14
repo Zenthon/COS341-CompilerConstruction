@@ -1,32 +1,3 @@
-if input (and(0, 0) ) then {
-    x           :=          0;
-
-} else {
-    x := 0;
-    return;
+main {
     halt;
-} ()
-
-while (
-                                    output
-           bool  {}
-                  or
-arr string[false] isheanesu;
-            larger, eq, agdd, sub, not,
-                                                                    until
-                                                                    until012
-     proc,
-        main,
-        halt,
-
-        dfsgsdgs, :=
-
-main{halt;arr string [100] name;}
-
-                                                            int[] x := new int[10];
-
-
-while(input( 100 )) do { string name := "COS341 GUYS"; }
-call
-""                              "ISHE DIRAI 0128"
-"I Z SHE INGIRAI";
+}
