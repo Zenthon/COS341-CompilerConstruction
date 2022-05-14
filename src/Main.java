@@ -24,30 +24,23 @@ public class Main {
                 for (Token t : lexer.tokens)
                     System.out.println(t.tokenFormat());
 
-            String s = "<SPLProg><A>aa</A></SPLProg>";
-
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new InputSource(new StringReader(s)));
-
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            DOMSource source = new DOMSource(document);
-
-            StreamResult result = new StreamResult(new File("syntaxTree.xml"));
-            transformer.transform(source, result);
         }
         catch (IOException e) {
             System.out.println("Failed to read file to string.");
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
         }
+    }
+
+    public static void treeToXML(String tree) throws ParserConfigurationException, IOException, SAXException, TransformerException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(new InputSource(new StringReader(tree)));
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        DOMSource source = new DOMSource(document);
+
+        StreamResult result = new StreamResult(new File("syntaxTree.xml"));
+        transformer.transform(source, result);
     }
 }
