@@ -28,6 +28,8 @@ public class Lexer {
     }
 
     public void process() throws LexicalException {
+        if (input.length()== 0)
+            throw new LexicalException("File is empty. No tokens to process");
         for (int i=0;   i<input.length();   i++) {
             if (input.charAt(i) == '\r' && input.charAt(i+1) == '\n') {
                 lineNumber++;
