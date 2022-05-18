@@ -4,15 +4,11 @@ public class Parser {
 
     private List<Token> tokens;
     private Token next;
-    private String xmlString;
+    public String xmlString;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
         xmlString = null;
-    }
-
-    public String getXmlString() {
-        return xmlString;
     }
 
     public String match(String s) throws ParserException {
@@ -40,7 +36,7 @@ public class Parser {
     private String parseA() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("main") || next.input.equals("return") || next.input.equals("output") || next.tType.equals("TOKEN_VAR") || next.input.equals("if") || next.input.equals("do") || next.input.equals("while") || next.input.equals("call"))
-            return "epsilon";
+            return "";
         else if (next.input.equals("proc"))
             return "<PD>" + parseD() + "</PD>" + match(",") + "<ProcDefs>" + parseA() + "</ProcDefs>";
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid");
@@ -56,7 +52,7 @@ public class Parser {
     private String parseB() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("halt") || next.input.equals("return") || next.input.equals("}"))
-            return "epsilon";
+            return "";
         else if (next.input.equals("output") || next.tType.equals("TOKEN_VAR") || next.input.equals("if") || next.input.equals("do") || next.input.equals("while") || next.input.equals("call"))
             return "<Instr>" + parseE() + "</Instr>" + match(";") + "<Algorithm>" + parseB() + "</Algorithm>";
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
@@ -92,7 +88,7 @@ public class Parser {
     private String parseH() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals(";"))
-            return "epsilon";
+            return "";
         else if (next.input.equals("else"))
             return match("else") + " " + match("{") + " " + "<Algorithm>" + parseB() + "</Algorithm>" + match("}");
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
@@ -193,7 +189,7 @@ public class Parser {
     private String parseC() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("}"))
-            return "epsilon";
+            return "";
         if (next.input.equals("bool") || next.input.equals("num") || next.input.equals("string") || next.input.equals("arr"))
             return "<Dec>" + parseR() + "</Dec>" + match(";") + "<VarDecl>" + parseC() + "</VarDecl>";
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");

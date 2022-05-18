@@ -29,7 +29,7 @@ public class Main {
             // Start the parser
             Parser parser = new Parser(lexer.tokens);
             parser.parseGrammar();
-            treeToXML(parser.getXmlString(), outputFile);
+            treeToXML(parser.xmlString, outputFile);
         }
         catch (IOException e) {
             System.out.println("Failed to read file to string.");
