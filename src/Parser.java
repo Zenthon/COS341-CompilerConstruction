@@ -78,7 +78,7 @@ public class Parser {
     private String parseF() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("output") ||next.tType.equals("TOKEN_VAR"))
-            return "<LHS>" + parseJ() + "</LHS>" + match(":=") + "<RHS>" + parseK() + "</RHS>";
+            return "<LHS>" + parseJ() + "</LHS>" + match(":=") + "<Expr>" + parseK() + "</Expr>";
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
@@ -101,7 +101,7 @@ public class Parser {
     private String parseI() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("do"))
-            return match("do") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("}") + " " + match("until") + " " + match("(") + "<RHS>" + parseK() + "</RHS>" + match(")");
+            return match("do") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("}") + " " + match("until") + " " + match("(") + "<Expr>" + parseK() + "</Expr>" + match(")");
         else if (next.input.equals("while"))
             return match("while") + " " + match("(") + "<Expr>" + parseK() + "</Expr>" + match(")") + " " + match("do") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("}");
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
@@ -136,7 +136,7 @@ public class Parser {
     private String parseL() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("call"))
-            return match("call") + " " +match("TOKEN_VAR");
+            return match("call") + " " + match("TOKEN_VAR");
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
@@ -165,10 +165,10 @@ public class Parser {
 
     private String parseO() throws ParserException {
         next = tokens.get(0);
-        if (next.tType.equals("token_shortstring".toUpperCase()))
-            return match("token_shortstring".toUpperCase());
-        if (next.tType.equals("token_number".toUpperCase()))
-            return match("token_number".toUpperCase());
+        if (next.tType.equals("TOKEN_SHORTSTRING"))
+            return match("TOKEN_SHORTSTRING");
+        if (next.tType.equals("TOKEN_NUMBER"))
+            return match("TOKEN_NUMBER");
         if (next.input.equals("true") || next.input.equals("false"))
             return match(next.input);
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");

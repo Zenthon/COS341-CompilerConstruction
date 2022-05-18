@@ -22,24 +22,21 @@ public class Main {
             System.out.print("Please enter the output file name with the extension (.xml): ");
             String outputFile = sc.nextLine();
 
-            // Start of the lexer
+            // Start the lexer
             Lexer lexer = new Lexer(Files.readString(Path.of(inputFile)));
             lexer.process();
 
-            // Check if lexer has errors. If not, get the tokens
-            if (!lexer.isHasErrors()) {
-                Parser parser = new Parser(lexer.tokens);
-                parser.parseGrammar();
-                treeToXML(parser.getXmlString(), outputFile);
-            }
-
+            // Start the parser
+            Parser parser = new Parser(lexer.tokens);
+            parser.parseGrammar();
+            treeToXML(parser.getXmlString(), outputFile);
         }
         catch (IOException e) {
             System.out.println("Failed to read file to string.");
         } catch (ParserConfigurationException | TransformerException | SAXException e) {
             e.printStackTrace();
-        } catch (ParserException e) {
-            System.out.println(e.getMessage());;
+        } catch (ParserException  | LexicalException e) {
+            System.out.println(e.getMessage());
         }
     }
 

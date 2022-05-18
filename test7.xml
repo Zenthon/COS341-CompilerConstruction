@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SPLProgr>
+    <ProcDefs>
+        <PD>
+            proc first {
+            <ProcDefs>
+                <PD>
+                    proc second {
+                    <ProcDefs>epsilon</ProcDefs>
+                    <Algorithm>
+                        <Instr>
+                            <Assign>
+                                <LHS>output</LHS>
+                                :=
+                                <RHS>
+                                    <BinOp>
+                                        and (
+                                        <Expr>
+                                            <UnOp>
+                                                not (
+                                                <Expr>
+                                                    <UnOp>
+                                                        input (
+                                                        <Var>x</Var>
+                                                        )
+                                                    </UnOp>
+                                                </Expr>
+                                                )
+                                            </UnOp>
+                                        </Expr>
+                                        ,
+                                        <Expr>
+                                            <BinOp>
+                                                add (
+                                                <Expr>
+                                                    <Var>y</Var>
+                                                </Expr>
+                                                ,
+                                                <Expr>
+                                                    <Var>z</Var>
+                                                </Expr>
+                                                )
+                                            </BinOp>
+                                        </Expr>
+                                        )
+                                    </BinOp>
+                                </RHS>
+                            </Assign>
+                        </Instr>
+                        ;
+                        <Algorithm>
+                            <Instr>
+                                <Loop>
+                                    do {
+                                    <Algorithm>
+                                        <Instr>
+                                            <Loop>
+                                                while (
+                                                <Expr>
+                                                    <BinOp>
+                                                        mult (
+                                                        <Expr>
+                                                            <Var>abc</Var>
+                                                        </Expr>
+                                                        ,
+                                                        <Expr>
+                                                            <Var>def</Var>
+                                                        </Expr>
+                                                        )
+                                                    </BinOp>
+                                                </Expr>
+                                                ) do {
+                                                <Algorithm>
+                                                    <Instr>
+                                                        <PCall>call third</PCall>
+                                                    </Instr>
+                                                    ;
+                                                    <Algorithm>epsilon</Algorithm>
+                                                </Algorithm>
+                                                }
+                                            </Loop>
+                                        </Instr>
+                                        ;
+                                        <Algorithm>epsilon</Algorithm>
+                                    </Algorithm>
+                                    } until (
+                                    <RHS>
+                                        <UnOp>
+                                            not (
+                                            <Expr>
+                                                <Const>false</Const>
+                                            </Expr>
+                                            )
+                                        </UnOp>
+                                    </RHS>
+                                    )
+                                </Loop>
+                            </Instr>
+                            ;
+                            <Algorithm>epsilon</Algorithm>
+                        </Algorithm>
+                    </Algorithm>
+                    return ;
+                    <VarDecl>
+                        <Dec>
+                            <TYP>num</TYP>
+                            <Var>xy</Var>
+                        </Dec>
+                        ;
+                        <VarDecl>
+                            <Dec>
+                                <TYP>bool</TYP>
+                                <Var>za</Var>
+                            </Dec>
+                            ;
+                            <VarDecl>
+                                <Dec>
+                                    <TYP>string</TYP>
+                                    <Var>name</Var>
+                                </Dec>
+                                ;
+                                <VarDecl>
+                                    <Dec>
+                                        arr
+                                        <TYP>bool</TYP>
+                                        [
+                                        <Const>10</Const>
+                                        ]
+                                        <Var>booleanarr</Var>
+                                    </Dec>
+                                    ;
+                                    <VarDecl>epsilon</VarDecl>
+                                </VarDecl>
+                            </VarDecl>
+                        </VarDecl>
+                    </VarDecl>
+                    }
+                </PD>
+                ,
+                <ProcDefs>epsilon</ProcDefs>
+            </ProcDefs>
+            <Algorithm>
+                <Instr>
+                    <Assign>
+                        <LHS>output</LHS>
+                        :=
+                        <RHS>
+                            <Const>-1234567890</Const>
+                        </RHS>
+                    </Assign>
+                </Instr>
+                ;
+                <Algorithm>
+                    <Instr>
+                        <Branch>
+                            if (
+                            <Expr>
+                                <Field>
+                                    stringarr [
+                                    <Var>newarr</Var>
+                                    ]
+                                </Field>
+                            </Expr>
+                            ) then {
+                            <Algorithm>
+                                <Instr>
+                                    <PCall>call second</PCall>
+                                </Instr>
+                                ;
+                                <Algorithm>epsilon</Algorithm>
+                            </Algorithm>
+                            }
+                            <Alternat>
+                                else { 
+                                <Algorithm>
+                                    <Instr>
+                                        <PCall>call first</PCall>
+                                    </Instr>
+                                    ;
+                                    <Algorithm>epsilon</Algorithm>
+                                </Algorithm>
+                                }
+                            </Alternat>
+                        </Branch>
+                    </Instr>
+                    ;
+                    <Algorithm>epsilon</Algorithm>
+                </Algorithm>
+            </Algorithm>
+            return ;
+            <VarDecl>
+                <Dec>
+                    <TYP>string</TYP>
+                    <Var>r</Var>
+                </Dec>
+                ;
+                <VarDecl>epsilon</VarDecl>
+            </VarDecl>
+            }
+        </PD>
+        ,
+        <ProcDefs>
+            <PD>
+                proc third {
+                <ProcDefs>epsilon</ProcDefs>
+                <Algorithm>
+                    <Instr>
+                        <PCall>call first</PCall>
+                    </Instr>
+                    ;
+                    <Algorithm>epsilon</Algorithm>
+                </Algorithm>
+                return ;
+                <VarDecl>epsilon</VarDecl>
+                }
+            </PD>
+            ,
+            <ProcDefs>epsilon</ProcDefs>
+        </ProcDefs>
+    </ProcDefs>
+    main {
+    <Algorithm>
+        <Instr>
+            <PCall>call first</PCall>
+        </Instr>
+        ;
+        <Algorithm>
+            <Instr>
+                <Assign>
+                    <LHS>output</LHS>
+                    :=
+                    <RHS>
+                        <Const>999</Const>
+                    </RHS>
+                </Assign>
+            </Instr>
+            ;
+            <Algorithm>
+                <Instr>
+                    <Assign>
+                        <LHS>output</LHS>
+                        :=
+                        <RHS>
+                            <Const>"YOU SUCK 101"</Const>
+                        </RHS>
+                    </Assign>
+                </Instr>
+                ;
+                <Algorithm>
+                    <Instr>
+                        <Assign>
+                            <LHS>
+                                <Var>grunersucks</Var>
+                            </LHS>
+                            :=
+                            <RHS>
+                                <Const>true</Const>
+                            </RHS>
+                        </Assign>
+                    </Instr>
+                    ;
+                    <Algorithm>
+                        <Instr>
+                            <Branch>
+                                if (
+                                <Expr>
+                                    <Var>grunersucks</Var>
+                                </Expr>
+                                ) then {
+                                <Algorithm>
+                                    <Instr>
+                                        <Assign>
+                                            <LHS>output</LHS>
+                                            :=
+                                            <RHS>
+                                                <Const>false</Const>
+                                            </RHS>
+                                        </Assign>
+                                    </Instr>
+                                    ;
+                                    <Algorithm>
+                                        <Instr>
+                                            <Assign>
+                                                <LHS>
+                                                    <Var>grunersucks</Var>
+                                                </LHS>
+                                                :=
+                                                <RHS>
+                                                    <Const>false</Const>
+                                                </RHS>
+                                            </Assign>
+                                        </Instr>
+                                        ;
+                                        <Algorithm>
+                                            <Instr>
+                                                <Assign>
+                                                    <LHS>
+                                                        <Var>grunersucks</Var>
+                                                    </LHS>
+                                                    :=
+                                                    <RHS>
+                                                        <Const>" HE IS A LEGEND"</Const>
+                                                    </RHS>
+                                                </Assign>
+                                            </Instr>
+                                            ;
+                                            <Algorithm>epsilon</Algorithm>
+                                        </Algorithm>
+                                    </Algorithm>
+                                </Algorithm>
+                                }
+                                <Alternat>epsilon</Alternat>
+                            </Branch>
+                        </Instr>
+                        ;
+                        <Algorithm>epsilon</Algorithm>
+                    </Algorithm>
+                </Algorithm>
+            </Algorithm>
+        </Algorithm>
+    </Algorithm>
+    halt ;
+    <VarDecl>
+        <Dec>
+            arr
+            <TYP>num</TYP>
+            [
+            <Const>"ISHE"</Const>
+            ]
+            <Var>lol</Var>
+        </Dec>
+        ;
+        <VarDecl>epsilon</VarDecl>
+    </VarDecl>
+    }
+</SPLProgr>

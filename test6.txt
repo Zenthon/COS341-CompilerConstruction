@@ -22,4 +22,5 @@ main {
     halt;
     num x;
     string y;
+    arr bool[10] hehe;
 }

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SPLProgr>
+    <ProcDefs>
+        <PD>
+            proc first {
+            <ProcDefs>
+                <PD>
+                    proc second {
+                    <ProcDefs>epsilon</ProcDefs>
+                    <Algorithm>
+                        <Instr>
+                            <Assign>
+                                <LHS>output</LHS>
+                                :=
+                                <Expr>
+                                    <Const>2</Const>
+                                </Expr>
+                            </Assign>
+                        </Instr>
+                        ;
+                        <Algorithm>epsilon</Algorithm>
+                    </Algorithm>
+                    return ;
+                    <VarDecl>
+                        <Dec>
+                            <TYP>string</TYP>
+                            <Var>secondvar</Var>
+                        </Dec>
+                        ;
+                        <VarDecl>epsilon</VarDecl>
+                    </VarDecl>
+                    }
+                </PD>
+                ,
+                <ProcDefs>epsilon</ProcDefs>
+            </ProcDefs>
+            <Algorithm>
+                <Instr>
+                    <PCall>call second</PCall>
+                </Instr>
+                ;
+                <Algorithm>
+                    <Instr>
+                        <Assign>
+                            <LHS>output</LHS>
+                            :=
+                            <Expr>
+                                <Const>1</Const>
+                            </Expr>
+                        </Assign>
+                    </Instr>
+                    ;
+                    <Algorithm>epsilon</Algorithm>
+                </Algorithm>
+            </Algorithm>
+            return ;
+            <VarDecl>
+                <Dec>
+                    <TYP>bool</TYP>
+                    <Var>firstvar</Var>
+                </Dec>
+                ;
+                <VarDecl>epsilon</VarDecl>
+            </VarDecl>
+            }
+        </PD>
+        ,
+        <ProcDefs>epsilon</ProcDefs>
+    </ProcDefs>
+    main {
+    <Algorithm>
+        <Instr>
+            <PCall>call first</PCall>
+        </Instr>
+        ;
+        <Algorithm>
+            <Instr>
+                <Assign>
+                    <LHS>
+                        <Var>name</Var>
+                    </LHS>
+                    :=
+                    <Expr>
+                        <Const>"HELLO COS341"</Const>
+                    </Expr>
+                </Assign>
+            </Instr>
+            ;
+            <Algorithm>
+                <Instr>
+                    <Branch>
+                        if (
+                        <Expr>
+                            <Const>true</Const>
+                        </Expr>
+                        ) then {
+                        <Algorithm>
+                            <Instr>
+                                <Loop>
+                                    do {
+                                    <Algorithm>
+                                        <Instr>
+                                            <Assign>
+                                                <LHS>
+                                                    <Var>numx</Var>
+                                                </LHS>
+                                                :=
+                                                <Expr>
+                                                    <Const>10</Const>
+                                                </Expr>
+                                            </Assign>
+                                        </Instr>
+                                        ;
+                                        <Algorithm>epsilon</Algorithm>
+                                    </Algorithm>
+                                    } until (
+                                    <Expr>
+                                        <UnOp>
+                                            not (
+                                            <Expr>
+                                                <BinOp>
+                                                    and (
+                                                    <Expr>
+                                                        <Const>true</Const>
+                                                    </Expr>
+                                                    ,
+                                                    <Expr>
+                                                        <Const>false</Const>
+                                                    </Expr>
+                                                    )
+                                                </BinOp>
+                                            </Expr>
+                                            )
+                                        </UnOp>
+                                    </Expr>
+                                    )
+                                </Loop>
+                            </Instr>
+                            ;
+                            <Algorithm>epsilon</Algorithm>
+                        </Algorithm>
+                        }
+                        <Alternat>epsilon</Alternat>
+                    </Branch>
+                </Instr>
+                ;
+                <Algorithm>epsilon</Algorithm>
+            </Algorithm>
+        </Algorithm>
+    </Algorithm>
+    halt ;
+    <VarDecl>
+        <Dec>
+            <TYP>num</TYP>
+            <Var>x</Var>
+        </Dec>
+        ;
+        <VarDecl>
+            <Dec>
+                <TYP>string</TYP>
+                <Var>y</Var>
+            </Dec>
+            ;
+            <VarDecl>
+                <Dec>
+                    arr
+                    <TYP>bool</TYP>
+                    [
+                    <Const>10</Const>
+                    ]
+                    <Var>hehe</Var>
+                </Dec>
+                ;
+                <VarDecl>epsilon</VarDecl>
+            </VarDecl>
+        </VarDecl>
+    </VarDecl>
+    }
+</SPLProgr>
