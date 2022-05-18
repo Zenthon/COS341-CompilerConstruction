@@ -1,0 +1,14 @@
+proc strings{
+call other;
+return;
+},
+proc other{
+you := "k 09";
+return;
+}
+main {
+if(true) then {
+output := this[you];
+x := -4 5; }
+halt;
+bool you;}

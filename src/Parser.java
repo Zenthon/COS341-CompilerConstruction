@@ -5,16 +5,10 @@ public class Parser {
     private List<Token> tokens;
     private Token next;
     private String xmlString;
-    private boolean hasErrors = false;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
-        this.tokens.add(new Token(this.tokens.size(), TokenType.token_eof.name().toUpperCase(), "$"));
         xmlString = null;
-    }
-
-    public boolean getHasErrors() {
-        return hasErrors;
     }
 
     public String getXmlString() {
@@ -24,7 +18,7 @@ public class Parser {
     public String match(String s) throws ParserException {
         Token lookAhead = tokens.remove(0);
         if (lookAhead.tType.equals(s))
-            return s;
+            return lookAhead.input;
         else if (lookAhead.input.equals(s))
             return s;
         throw new ParserException("Token #" + lookAhead.id + ", Token name: " + lookAhead.input + " is invalid. Expected " + s);
@@ -32,12 +26,14 @@ public class Parser {
 
     public void parseGrammar() throws ParserException {
         xmlString = "<SPLProgr>" + parseS() + "</SPLProgr>";
+        if (!tokens.isEmpty())
+            throw new ParserException("Not all the tokens were processed");
     }
 
     private String parseS() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("main") || next.input.equals("proc"))
-            return "<ProcDefs>" + parseA() + "</ProcDefs>" + match("main") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("halt") + match(";") + "<VarDecl>" + parseC() + "</VarDecl>" + match("}");
+            return "<ProcDefs>" + parseA() + "</ProcDefs>" + match("main") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("halt") + " " + match(";") + "<VarDecl>" + parseC() + "</VarDecl>" + match("}");
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid");
     }
 
@@ -79,85 +75,147 @@ public class Parser {
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseF() {
+    private String parseF() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("output") ||next.tType.equals("TOKEN_VAR"))
+            return "<LHS>" + parseJ() + "</LHS>" + match(":=") + "<RHS>" + parseK() + "</RHS>";
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseG() {
+    private String parseG() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("if"))
+            return match("if") + " " + match("(") + "<Expr>" + parseK() + "</Expr>" + match(")") + " " + match("then") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("}") + "<Alternat>" + parseH() + "</Alternat>";
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseH() {
+    private String parseH() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals(";"))
+            return "epsilon";
+        else if (next.input.equals("else"))
+            return match("else") + " " + match("{") + " " + "<Algorithm>" + parseB() + "</Algorithm>" + match("}");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseI() {
+    private String parseI() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("do"))
+            return match("do") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("}") + " " + match("until") + " " + match("(") + "<RHS>" + parseK() + "</RHS>" + match(")");
+        else if (next.input.equals("while"))
+            return match("while") + " " + match("(") + "<Expr>" + parseK() + "</Expr>" + match(")") + " " + match("do") + " " + match("{") + "<Algorithm>" + parseB() + "</Algorithm>" + match("}");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseJ() {
+    private String parseJ() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("output"))
+            return match("output");
+        else if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("["))
+            return "<Field>" + parseN() + "</Field>";
+        if (next.tType.equals("TOKEN_VAR"))
+            return "<Var>" + parseM() + "</Var>";
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid. Expected output or a userDefinedName");
     }
 
-    private String parseK() {
+    private String parseK() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.tType.equals("TOKEN_SHORTSTRING") || next.tType.equals("TOKEN_NUMBER") || next.input.equals("true") || next.input.equals("false"))
+            return "<Const>" + parseO() + "</Const>";
+        if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("["))
+            return "<Field>" + parseN() + "</Field>";
+        if (next.tType.equals("TOKEN_VAR"))
+            return "<Var>" + parseM() + "</Var>";
+        if (next.input.equals("input") || next.input.equals("not"))
+            return "<UnOp>" + parseP() + "</UnOp>";
+        if (next.input.equals("and") || next.input.equals("or") || next.input.equals("eq") || next.input.equals("larger") || next.input.equals("add") || next.input.equals("sub") || next.input.equals("mult"))
+            return "<BinOp>" + parseQ() + "</BinOp>";
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseL() {
+    private String parseL() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("call"))
+            return match("call") + " " +match("TOKEN_VAR");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseM() {
+    private String parseM() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if(next.tType.equals("TOKEN_VAR"))
+            return match("TOKEN_VAR");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseN() {
+    private String parseN() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.tType.equals("TOKEN_VAR"))
+            return match("TOKEN_VAR") + " " + match("[") + parseZ();
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseZ() {
+    private String parseZ() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.tType.equals("TOKEN_VAR"))
+            return "<Var>" + parseM() + "</Var>" + match("]");
+        if (next.tType.equals("TOKEN_SHORTSTRING") || next.tType.equals("TOKEN_NUMBER") || next.input.equals("true") || next.input.equals("false"))
+            return "<Const>" + parseO() + "</Const>" + match("]");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseO() {
+    private String parseO() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.tType.equals("token_shortstring".toUpperCase()))
+            return match("token_shortstring".toUpperCase());
+        if (next.tType.equals("token_number".toUpperCase()))
+            return match("token_number".toUpperCase());
+        if (next.input.equals("true") || next.input.equals("false"))
+            return match(next.input);
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseP() {
+    private String parseP() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("input"))
+            return match("input") + " " + match("(") + "<Var>" + parseM() + "</Var>" + match(")");
+        if (next.input.equals("not"))
+            return match("not") + " " + match("(") + "<Expr>" + parseK() + "</Expr>" + match(")");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseQ() {
+    private String parseQ() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("and") || next.input.equals("or") || next.input.equals("eq") || next.input.equals("larger") || next.input.equals("add") || next.input.equals("sub") || next.input.equals("mult"))
+            return match(next.input) + " " + match("(") + "<Expr>" + parseK() + "</Expr>" + match(",") + "<Expr>" + parseK() + "</Expr>" + match(")");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseC() {
+    private String parseC() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("}"))
+            return "epsilon";
+        if (next.input.equals("bool") || next.input.equals("num") || next.input.equals("string") || next.input.equals("arr"))
+            return "<Dec>" + parseR() + "</Dec>" + match(";") + "<VarDecl>" + parseC() + "</VarDecl>";
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseR() {
+    private String parseR() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("bool") || next.input.equals("num") || next.input.equals("string"))
+            return "<TYP>" + parseT() + "</TYP>" + "<Var>" + parseM() + "</Var>";
+        if (next.input.equals("arr"))
+            return match("arr") + "<TYP>" + parseT() + "</TYP>" + match("[") + "<Const>" + parseO() + "</Const>" + match("]") + "<Var>" + parseM() + "</Var>";
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
-    private String parseT() {
+    private String parseT() throws ParserException {
         next = tokens.get(0);
-        return "";
+        if (next.input.equals("string"))
+            return match("string");
+        if (next.input.equals("bool"))
+            return match("bool");
+        if (next.input.equals("num"))
+            return match("num");
+        throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
-
-
 }

@@ -1,0 +1,8 @@
+ proc userdefinedname{
+ my:="HE56 LL O3";
+ return;
+ },main {
+        do{dostr:="D564";}until(false);do
+        {pain:=true;}
+        until(false);x:=-45;
+        halt;string dostr; }

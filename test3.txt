@@ -1,0 +1,16 @@
+proc nuts{
+    null
+    call toes
+    ;
+if(glow)then{null}else{
+    output
+    := not(10)
+    ;null
+}
+    ;null
+    return;
+    null},null
+
+main {
+     null halt; null
+     };

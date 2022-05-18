@@ -1,0 +1,61 @@
+proc first {
+
+proc
+second{
+    output:=and(not(input(x)), add(y,z));
+        do{
+            while (mult (abc,def) ) do
+                    {
+                call third;
+            };
+        }
+    until
+    (not
+        ( false )
+        );
+        return;
+
+        num xy; bool za;    string name;
+        arr bool
+        [ 10 ]
+        booleanarr;
+},
+    output:=    -1234567890;
+    if (stringarr
+        [ newarr ]
+        )   then {
+        call second;
+    }
+    else {
+        call first;
+        };
+        return;       string r;
+
+},
+
+        proc third {
+            call first;
+            return;
+        },
+
+
+    main  {
+        call first;
+
+
+            output  :=  999;
+            output  :="YOU SUCK 101";
+            grunersucks := true;
+
+
+                if(grunersucks) then
+                    {
+
+                    output:=false ;
+                    grunersucks:= false         ;
+                grunersucks :=          " HE IS A LEGEND";
+            };           halt;
+        arr num
+        ["ISHE"] lol
+        ;
+    }
