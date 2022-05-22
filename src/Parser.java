@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
@@ -8,12 +9,14 @@ public class Parser {
     public  int counter = 0;
 
     public Parser(List<Token> tokens) {
-        this.tokens = tokens;
+        this.tokens = new ArrayList<>(tokens);
         xmlString = null;
     }
 
     public String match(String s) throws ParserException {
         Token lookAhead = tokens.remove(0);
+        if (s.equals("UNIQUE"))
+            return "main";
         if (lookAhead.tType.equals(s))
             return lookAhead.input;
         else if (lookAhead.input.equals(s))
@@ -46,7 +49,7 @@ public class Parser {
     private String parseD() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("proc"))
-            return match("proc") + " " + match("TOKEN_VAR") + " " + match("{") + "<ProcDefs>" + parseA() + "</ProcDefs>" + "<Algorithm>" + parseB() + "</Algorithm>" + match("return") + " " + match(";") + "<VarDecl>" + parseC() + "</VarDecl>" + match("}");
+            return match("proc") + " " + match("UNIQUE") + " " + match("{") + "<ProcDefs>" + parseA() + "</ProcDefs>" + "<Algorithm>" + parseB() + "</Algorithm>" + match("return") + " " + match(";") + "<VarDecl>" + parseC() + "</VarDecl>" + match("}");
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid. Expected proc");
     }
 
