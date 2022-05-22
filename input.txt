@@ -1,10 +1,14 @@
-proc ss  {
-             return;
+proc a {
+    proc b {
+        return;
+    },
+    return;
+},
 
-         },
+proc c {
+    return;
+},
 
-main  {
-      output  :=  999;
-      halt;
-      num index;
-    }
+main {
+    halt;
+}

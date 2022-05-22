@@ -14,6 +14,7 @@ public class ScopeAnalyzer {
     // Generate the tree
     public void generateAST() {
         tree = parseS();
+        System.out.println("Yessir");
     }
 
     public String match(String s) {
@@ -22,7 +23,7 @@ public class ScopeAnalyzer {
             return lookAhead.input;
         else if (lookAhead.input.equals(s))
             return s;
-        return null;
+        return "main";
     }
 
     public Node parseS() {
@@ -59,7 +60,7 @@ public class ScopeAnalyzer {
         Node PD = new Node("PD", "NON-TERMINAL");
         if (next.input.equals("proc")) {
             PD.addChildren(new Node(match("proc"), "TERMINAL"));
-            PD.addChildren(new Node(match("UNIQUE"), "TERMINAL"));
+            PD.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
             PD.addChildren(new Node(match("{"), "TERMINAL"));
             PD.addChildren(parseA());
             PD.addChildren(parseB());
@@ -224,15 +225,47 @@ public class ScopeAnalyzer {
     }
 
     public Node parseZ() {
-        return null;
+        next = tokens.get(0);
+        Node Z = new Node("Z", "NON-TERMINAL");
+        if (next.tType.equals("TOKEN_VAR")) {
+            Z.addChildren(parseM());
+            Z.addChildren(new Node(match("]"), "TERMINAL"));
+        }
+        if (next.tType.equals("TOKEN_SHORTSTRING") || next.tType.equals("TOKEN_NUMBER") || next.input.equals("true") || next.input.equals("false")) {
+            Z.addChildren(parseO());
+            Z.addChildren(new Node(match("]"), "TERMINAL"));
+        }
+        return Z;
     }
 
     public Node parseO() {
-        return null;
+        next = tokens.get(0);
+        Node Const = new Node("Const", "TERMINAL");
+        if (next.tType.equals("TOKEN_SHORTSTRING"))
+            Const.addChildren(new Node(match("TOKEN_SHORTSTRING"), "TERMINAL"));
+        if (next.tType.equals("TOKEN_NUMBER"))
+            Const.addChildren(new Node(match("TOKEN_NUMBER"), "TERMINAL"));
+        if (next.input.equals("true") || next.input.equals("false"))
+            Const.addChildren(new Node(match(next.input), "TERMINAL"));
+        return Const;
     }
 
     public Node parseP() {
-        return null;
+        next = tokens.get(0);
+        Node UnOp = new Node("UnOp", "NON-TERMINAL");
+        if (next.input.equals("input")) {
+            UnOp.addChildren(new Node(match("input"), "TERMINAL"));
+            UnOp.addChildren(new Node(match("("), "TERMINAL"));
+            UnOp.addChildren(parseM());
+            UnOp.addChildren(new Node(match(")"), "TERMINAL"));
+        }
+        if (next.input.equals("not")) {
+            UnOp.addChildren(new Node(match("not"), "TERMINAL"));
+            UnOp.addChildren(new Node(match("("), "TERMINAL"));
+            UnOp.addChildren(parseK());
+            UnOp.addChildren(new Node(match(")"), "TERMINAL"));
+        }
+        return UnOp;
     }
 
     public Node parseQ() {
