@@ -1,4 +1,0 @@
-main {
-    output := and(true ,not(not(add("HESS",true))));
-    halt;
-}
