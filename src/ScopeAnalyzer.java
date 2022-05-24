@@ -2,7 +2,7 @@ import java.util.*;
 
 public class ScopeAnalyzer {
 
-    private List<Token> tokens;
+    private final List<Token> tokens;
     private Token next;
     private Node tree;
     private Node symbolTable;
@@ -16,16 +16,14 @@ public class ScopeAnalyzer {
         tree=  parseS();
     }
 
-    public String match(String s) {
+    private String match(String s) {
         Token lookAhead = tokens.remove(0);
-        if (lookAhead.tType.equals(s))
-            return lookAhead.input;
-        else if (lookAhead.input.equals(s))
-            return s;
+        if (lookAhead.tType.equals(s)) return lookAhead.input;
+        else if (lookAhead.input.equals(s)) return s;
         return "main";
     }
 
-    public Node parseS() {
+    private Node parseS() {
         next = tokens.get(0);
         Node SPLProgr = new Node("SPLProgr", "NON-TERMINAL");
         if (next.input.equals("main") || next.input.equals("proc")) {
@@ -41,10 +39,9 @@ public class ScopeAnalyzer {
         return SPLProgr;
     }
 
-    public Node parseA() {
+    private Node parseA() {
         next = tokens.get(0);
-        if (next.input.equals("main") || next.input.equals("return") || next.input.equals("output") || next.tType.equals("TOKEN_VAR") || next.input.equals("if") || next.input.equals("do") || next.input.equals("while") || next.input.equals("call"))
-            return null;
+        if (next.input.equals("main") || next.input.equals("return") || next.input.equals("output") || next.tType.equals("TOKEN_VAR") || next.input.equals("if") || next.input.equals("do") || next.input.equals("while") || next.input.equals("call")) return null;
         Node ProcDefs = new Node("ProcDefs", "NON-TERMINAL");
         if (next.input.equals("proc")) {
             ProcDefs.addChildren(parseD());
@@ -54,7 +51,7 @@ public class ScopeAnalyzer {
         return ProcDefs;
     }
 
-    public Node parseD() {
+    private Node parseD() {
         next = tokens.get(0);
         Node PD = new Node("PD", "NON-TERMINAL");
         if (next.input.equals("proc")) {
@@ -71,10 +68,9 @@ public class ScopeAnalyzer {
         return PD;
     }
 
-    Node parseB() {
+    private Node parseB() {
         next = tokens.get(0);
-        if (next.input.equals("halt") || next.input.equals("return") || next.input.equals("}"))
-            return null;
+        if (next.input.equals("halt") || next.input.equals("return") || next.input.equals("}")) return null;
         Node Algorithm = new Node("Algorithm", "NON-TERMINAL");
         if (next.input.equals("output") || next.tType.equals("TOKEN_VAR") || next.input.equals("if") || next.input.equals("do") || next.input.equals("while") || next.input.equals("call")) {
             Algorithm.addChildren(parseE());
@@ -84,21 +80,17 @@ public class ScopeAnalyzer {
         return Algorithm;
     }
 
-    public Node parseE() {
+    private Node parseE() {
         next = tokens.get(0);
         Node Instr = new Node("Instr", "NON-TERMINAL");
-        if (next.input.equals("output") || next.tType.equals("TOKEN_VAR"))
-            Instr.addChildren(parseF());
-        else if (next.input.equals("if"))
-            Instr.addChildren(parseG());
-        else if (next.input.equals("do") || next.input.equals("while"))
-            Instr.addChildren(parseI());
-        else if (next.input.equals("call"))
-            Instr.addChildren(parseL());
+        if (next.input.equals("output") || next.tType.equals("TOKEN_VAR"))  Instr.addChildren(parseF());
+        else if (next.input.equals("if"))  Instr.addChildren(parseG());
+        else if (next.input.equals("do") || next.input.equals("while"))  Instr.addChildren(parseI());
+        else if (next.input.equals("call"))  Instr.addChildren(parseL());
         return Instr;
     }
 
-    public Node parseF() {
+    private Node parseF() {
         next = tokens.get(0);
         Node ASSIGN = new Node("ASSIGN", "NON-TERMINAL");
         if (next.input.equals("output") ||next.tType.equals("TOKEN_VAR")) {
@@ -109,7 +101,7 @@ public class ScopeAnalyzer {
         return ASSIGN;
     }
 
-    public Node parseG() {
+    private Node parseG() {
         next = tokens.get(0);
         Node Branch = new Node("Branch", "NON-TERMINAL");
         if (next.input.equals("if")) {
@@ -126,10 +118,9 @@ public class ScopeAnalyzer {
         return Branch;
     }
 
-    public Node parseH() {
+    private Node parseH() {
         next = tokens.get(0);
-        if (next.input.equals(";"))
-            return null;
+        if (next.input.equals(";")) return null;
         Node Alternat = new Node("Alternat", "NON-TERMINAL");
         if (next.input.equals("else")) {
             Alternat.addChildren(new Node(match("else"), "TERMINAL"));
@@ -140,7 +131,7 @@ public class ScopeAnalyzer {
         return Alternat;
     }
 
-    public Node parseI() {
+    private Node parseI() {
         next = tokens.get(0);
         Node Loop = new Node("Loop", "NON-TERMINAL");
         if (next.input.equals("do")) {
@@ -166,53 +157,44 @@ public class ScopeAnalyzer {
         return Loop;
     }
 
-    public Node parseJ() {
+    private Node parseJ() {
         next = tokens.get(0);
         Node LHS = new Node("LHS", "NON-TERMINAL");
-        if (next.input.equals("output"))
-            LHS.addChildren(new Node(match("output"), "TERMINAL"));
-        else if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("["))
-            LHS.addChildren(parseN());
-        if (next.tType.equals("TOKEN_VAR"))
-            LHS.addChildren(parseM());
+        if (next.input.equals("output"))   LHS.addChildren(new Node(match("output"), "TERMINAL"));
+        else if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("["))  LHS.addChildren(parseN());
+        if (next.tType.equals("TOKEN_VAR")) LHS.addChildren(parseM());
         return LHS;
     }
 
-    public Node parseK() {
+    private Node parseK() {
         next = tokens.get(0);
         Node Expr = new Node("Expr", "NON-TERMINAL");
-        if (next.tType.equals("TOKEN_SHORTSTRING") || next.tType.equals("TOKEN_NUMBER") || next.input.equals("true") || next.input.equals("false"))
-            Expr.addChildren(parseO());
-        if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("["))
-            Expr.addChildren(parseN());
-        if (next.tType.equals("TOKEN_VAR"))
-            Expr.addChildren(parseM());
-        if (next.input.equals("input") || next.input.equals("not"))
-            Expr.addChildren(parseP());
-        if (next.input.equals("and") || next.input.equals("or") || next.input.equals("eq") || next.input.equals("larger") || next.input.equals("add") || next.input.equals("sub") || next.input.equals("mult"))
-            Expr.addChildren(parseQ());
+        if (next.tType.equals("TOKEN_SHORTSTRING") || next.tType.equals("TOKEN_NUMBER") || next.input.equals("true") || next.input.equals("false")) Expr.addChildren(parseO());
+        if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("[")) Expr.addChildren(parseN());
+        if (next.tType.equals("TOKEN_VAR"))  Expr.addChildren(parseM());
+        if (next.input.equals("input") || next.input.equals("not")) Expr.addChildren(parseP());
+        if (next.input.equals("and") || next.input.equals("or") || next.input.equals("eq") || next.input.equals("larger") || next.input.equals("add") || next.input.equals("sub") || next.input.equals("mult")) Expr.addChildren(parseQ());
         return Expr;
     }
 
-    public Node parseL() {
+    private Node parseL() {
         next = tokens.get(0);
         Node PCall = new Node("PCall", "NON-TERMINAL");
         if (next.input.equals("call")) {
             PCall.addChildren(new Node(match("call"), "TERMINAL"));
-            PCall.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
+            PCall.addChildren(new Node(match("TOKEN_VAR"), "PCall"));
         }
         return PCall;
     }
 
-    public Node parseM() {
+    private Node parseM() {
         next = tokens.get(0);
         Node Var = new Node("Var", "NON-TERMINAL");
-        if(next.tType.equals("TOKEN_VAR"))
-            Var.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
+        if(next.tType.equals("TOKEN_VAR")) Var.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
         return Var;
     }
 
-    public Node parseN() {
+    private Node parseN() {
         next = tokens.get(0);
         Node Field = new Node("Field", "NON-TERMINAL");
         if (next.tType.equals("TOKEN_VAR")) {
@@ -223,7 +205,7 @@ public class ScopeAnalyzer {
         return Field;
     }
 
-    public Node parseZ() {
+    private Node parseZ() {
         next = tokens.get(0);
         Node Z = new Node("Z", "NON-TERMINAL");
         if (next.tType.equals("TOKEN_VAR")) {
@@ -237,19 +219,16 @@ public class ScopeAnalyzer {
         return Z;
     }
 
-    public Node parseO() {
+    private Node parseO() {
         next = tokens.get(0);
         Node Const = new Node("Const", "TERMINAL");
-        if (next.tType.equals("TOKEN_SHORTSTRING"))
-            Const.addChildren(new Node(match("TOKEN_SHORTSTRING"), "TERMINAL"));
-        if (next.tType.equals("TOKEN_NUMBER"))
-            Const.addChildren(new Node(match("TOKEN_NUMBER"), "TERMINAL"));
-        if (next.input.equals("true") || next.input.equals("false"))
-            Const.addChildren(new Node(match(next.input), "TERMINAL"));
+        if (next.tType.equals("TOKEN_SHORTSTRING")) Const.addChildren(new Node(match("TOKEN_SHORTSTRING"), "TERMINAL"));
+        if (next.tType.equals("TOKEN_NUMBER")) Const.addChildren(new Node(match("TOKEN_NUMBER"), "TERMINAL"));
+        if (next.input.equals("true") || next.input.equals("false")) Const.addChildren(new Node(match(next.input), "TERMINAL"));
         return Const;
     }
 
-    public Node parseP() {
+    private Node parseP() {
         next = tokens.get(0);
         Node UnOp = new Node("UnOp", "NON-TERMINAL");
         if (next.input.equals("input")) {
@@ -267,7 +246,7 @@ public class ScopeAnalyzer {
         return UnOp;
     }
 
-    public Node parseQ() {
+    private Node parseQ() {
         next = tokens.get(0);
         Node BinOp = new Node("BinOp", "NON-TERMINAL");
         if (next.input.equals("and") || next.input.equals("or") || next.input.equals("eq") || next.input.equals("larger") || next.input.equals("add") || next.input.equals("sub") || next.input.equals("mult")) {
@@ -281,10 +260,9 @@ public class ScopeAnalyzer {
         return BinOp;
     }
 
-    public Node parseC() {
+    private Node parseC() {
         next = tokens.get(0);
-        if (next.input.equals("}"))
-            return null;
+        if (next.input.equals("}")) return null;
         Node VarDecl = new Node("VarDecl", "NON-TERMINAL");
         if (next.input.equals("bool") || next.input.equals("num") || next.input.equals("string") || next.input.equals("arr")) {
             VarDecl.addChildren(parseR());
@@ -294,7 +272,7 @@ public class ScopeAnalyzer {
         return VarDecl;
     }
 
-    public Node parseR() {
+    private Node parseR() {
         next = tokens.get(0);
         Node DEC = new Node("DEC", "NON-TERMINAL");
         if (next.input.equals("bool") || next.input.equals("num") || next.input.equals("string")) {
@@ -312,24 +290,27 @@ public class ScopeAnalyzer {
         return DEC;
     }
 
-    public Node parseT() {
+    private Node parseT() {
         next = tokens.get(0);
         Node TYP = new Node("TYP", "NON-TERMINAL");
-        if (next.input.equals("string"))
-            TYP.addChildren(new Node(match("string"), "TYP_string"));
-        if (next.input.equals("bool"))
-            TYP.addChildren(new Node(match("bool"), "TYP_bool"));
-        if (next.input.equals("num"))
-            TYP.addChildren(new Node(match("num"), "TYP_num"));
+        if (next.input.equals("string")) TYP.addChildren(new Node(match("string"), "TYP_string"));
+        if (next.input.equals("bool")) TYP.addChildren(new Node(match("bool"), "TYP_bool"));
+        if (next.input.equals("num")) TYP.addChildren(new Node(match("num"), "TYP_num"));
         return TYP;
     }
 
-
     // Start the scope analysis
     public void startScopeAnalysis() throws SemanticException {
+        // Check if main is used as a procedure name
         checkMainProcedure();
+
+        // Generate the Abstract Syntax Tree from tokens
         generateAST();
+
+        // Set the scopes of the tokens in the tree
         setScopes();
+
+        // Convert tree into list of terminal tokens
         List<Node> nodes = new LinkedList<>();
         populateList(nodes, tree);
         for (int i=0;   i<nodes.size(); i++) {
@@ -337,12 +318,41 @@ public class ScopeAnalyzer {
             if (temp.name.equals("proc"))
                 nodes.get(i+1).childScope = temp.childScope;
         }
+
+        // Create Global Symbol table
         symbolTable = getMainNode(nodes);
         symbolTable.parent = null;
         symbolTable.scopeID = -1;
 
+        // Populate global symbol table and generate inner scope tables
         populateTable(nodes, symbolTable);
 
+        checkProcedureCalls(symbolTable);
+    }
+
+    // Check procedure calls
+    private void checkProcedureCalls(Node symbolTable) throws SemanticException {
+        boolean isValid = false;
+        for (Node child : symbolTable.children) {
+            if (child.classifier.equals("PCall")) {
+                if (child.name.equals(symbolTable.name))
+                    isValid = true;
+
+                if (!isValid) {
+                    for (Node x : symbolTable.children) {
+                        if (x.classifier.equals("procUserDefinedName") && x.name.equals(child.name)) {
+                            isValid = true;
+                            break;
+                        }
+                    }
+                }
+                if (!isValid)
+                    throw new SemanticException("Procedure " + child.name + " is not declared (APPL-DECL error)");
+            }
+        }
+
+        for (Node child : symbolTable.children)
+            checkProcedureCalls(child);
     }
 
     // populate table
@@ -352,7 +362,7 @@ public class ScopeAnalyzer {
             if (deleted) i = 0;
             Node temp = nodes.get(i);
             if (temp.scopeID == table.childScope) {
-                if (temp.name.equals(table.name) && !temp.classifier.equals("TERMINAL") )
+                if (temp.name.equals(table.name) && temp.classifier.equals("procUserDefinedName"))
                     throw new SemanticException("Procedure name " + temp.name + ", Scope #" + temp.scopeID + " is already used by the parent");
                 if (temp.classifier.equals("procUserDefinedName") )
                     checkSiblings(temp, table.children);
@@ -364,18 +374,18 @@ public class ScopeAnalyzer {
         }
     }
 
-
     // get main node
     private Node getMainNode(List<Node> nodes) {
         for (int i=0;   i<nodes.size();     i++)
-            if (nodes.get(i).name.equals("main")) return nodes.remove(i);
+            if (nodes.get(i).name.equals("main"))
+                return nodes.remove(i);
         return null;
     }
 
     // check sibling
     private void checkSiblings(Node child, List<Node> siblings) throws SemanticException {
-        for (int i=0;   i<siblings.size();  i++)
-            if (child.name.equals(siblings.get(i).name))
+        for (Node sibling : siblings)
+            if (child.name.equals(sibling.name))
                 throw new SemanticException("Procedure name " + child.name + ", Scope #" + child.scopeID + " is already used by a sibling");
     }
 
@@ -405,7 +415,6 @@ public class ScopeAnalyzer {
         if (n.children.isEmpty()) list.add(n);
         for (Node child : n.children) populateList(list, child);
     }
-
 
     // Semantic Checking: No procedure can have the name main
     public void checkMainProcedure() throws SemanticException {

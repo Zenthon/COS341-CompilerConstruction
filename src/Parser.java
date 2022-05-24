@@ -15,9 +15,7 @@ public class Parser {
 
     public String match(String s) throws ParserException {
         Token lookAhead = tokens.remove(0);
-        if (s.equals("UNIQUE"))
-            return "main";
-        if (lookAhead.tType.equals(s))
+        if (lookAhead.tType.equals(s) || s.equals("UNIQUE"))
             return lookAhead.input;
         else if (lookAhead.input.equals(s))
             return s;
@@ -136,7 +134,7 @@ public class Parser {
     private String parseL() throws ParserException {
         next = tokens.get(0);
         if (next.input.equals("call"))
-            return match("call") + " " + match("TOKEN_VAR");
+            return match("call") + " " + match("UNIQUE");
         throw new ParserException("Token #" + next.id + ", Token name: " + next.input + " is invalid.");
     }
 
