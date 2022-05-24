@@ -4,10 +4,11 @@ public class Node {
 
     public String name;
     public int scopeID;
+    public int childScope;
+
     public String classifier;
     public Node parent;
     ArrayList<Node> children = new ArrayList<>();
-    LinkedList<Integer> scopes;
 
 
     public Node(String n, String c) {
@@ -15,11 +16,6 @@ public class Node {
         scopeID = -1;
         classifier = c;
         parent = null;
-    }
-
-    public void addScopeToNode(Integer s) {
-        if (scopes == null) scopes = new LinkedList<>();
-        if (!scopes.contains(s)) scopes.add(s);
     }
 
     public void setCorrectScope() {

@@ -1,14 +1,24 @@
-proc a {
+proc b {
     proc b {
+        proc b {
+                return;
+            },
         return;
     },
+
     return;
 },
 
-proc c {
+proc d {
+    proc e {
+                return;
+            },
             return;
         },
 
-main {halt
-    ;
+
+
+main {
+    halt;
+    num x;
 }

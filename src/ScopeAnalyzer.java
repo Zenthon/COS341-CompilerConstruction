@@ -5,14 +5,15 @@ public class ScopeAnalyzer {
     private List<Token> tokens;
     private Token next;
     private Node tree;
+    private Node symbolTable;
 
     public ScopeAnalyzer(List<Token> tokens) {
         this.tokens = new ArrayList<>(tokens);
     }
 
     // Generate the tree
-    public Node generateAST() {
-        return parseS();
+    public void generateAST() {
+        tree=  parseS();
     }
 
     public String match(String s) {
@@ -29,7 +30,7 @@ public class ScopeAnalyzer {
         Node SPLProgr = new Node("SPLProgr", "NON-TERMINAL");
         if (next.input.equals("main") || next.input.equals("proc")) {
             SPLProgr.addChildren(parseA());
-            SPLProgr.addChildren(new Node(match("main"), "TERMINAL"));
+            SPLProgr.addChildren(new Node(match("main"), "MAIN"));
             SPLProgr.addChildren(new Node(match("{"), "TERMINAL"));
             SPLProgr.addChildren(parseB());
             SPLProgr.addChildren(new Node(match("halt"), "TERMINAL"));
@@ -315,11 +316,11 @@ public class ScopeAnalyzer {
         next = tokens.get(0);
         Node TYP = new Node("TYP", "NON-TERMINAL");
         if (next.input.equals("string"))
-            TYP.addChildren(new Node(match("string"), "TERMINAL"));
+            TYP.addChildren(new Node(match("string"), "TYP_string"));
         if (next.input.equals("bool"))
-            TYP.addChildren(new Node(match("bool"), "TERMINAL"));
+            TYP.addChildren(new Node(match("bool"), "TYP_bool"));
         if (next.input.equals("num"))
-            TYP.addChildren(new Node(match("num"), "TERMINAL"));
+            TYP.addChildren(new Node(match("num"), "TYP_num"));
         return TYP;
     }
 
@@ -327,9 +328,55 @@ public class ScopeAnalyzer {
     // Start the scope analysis
     public void startScopeAnalysis() throws SemanticException {
         checkMainProcedure();
-        tree = generateAST();
+        generateAST();
         setScopes();
-        System.out.println("Hello");
+        List<Node> nodes = new LinkedList<>();
+        populateList(nodes, tree);
+        for (int i=0;   i<nodes.size(); i++) {
+            Node temp = nodes.get(i);
+            if (temp.name.equals("proc"))
+                nodes.get(i+1).childScope = temp.childScope;
+        }
+        symbolTable = getMainNode(nodes);
+        symbolTable.parent = null;
+        symbolTable.scopeID = -1;
+
+        populateTable(nodes, symbolTable);
+
+    }
+
+    // populate table
+    void populateTable(List<Node> nodes, Node table) throws SemanticException {
+        boolean deleted = false;
+        for (int i=0;   i<nodes.size();     i++) {
+            if (deleted) i = 0;
+            Node temp = nodes.get(i);
+            if (temp.scopeID == table.childScope) {
+                if (temp.name.equals(table.name) && !temp.classifier.equals("TERMINAL") )
+                    throw new SemanticException("Procedure name " + temp.name + ", Scope #" + temp.scopeID + " is already used by the parent");
+                if (temp.classifier.equals("procUserDefinedName") )
+                    checkSiblings(temp, table.children);
+                table.children.add(nodes.remove(i));
+                if (table.children.get(table.children.size()-1).classifier.equals("procUserDefinedName"))
+                    populateTable(nodes, table.children.get(table.children.size()-1));
+                deleted = true;
+            } else deleted = false;
+        }
+    }
+
+
+    // get main node
+    private Node getMainNode(List<Node> nodes) {
+        for (int i=0;   i<nodes.size();     i++)
+            if (nodes.get(i).name.equals("main")) return nodes.remove(i);
+        return null;
+    }
+
+    // check sibling
+    private void checkSiblings(Node child, List<Node> siblings) throws SemanticException {
+        for (int i=0;   i<siblings.size();  i++)
+            if (child.name.equals(siblings.get(i).name))
+                throw new SemanticException("Procedure name " + child.name + ", Scope #" + child.scopeID + " is already used by a sibling");
     }
 
     // Set the scopes
@@ -341,25 +388,29 @@ public class ScopeAnalyzer {
 
         while (!open.isEmpty()) {
             temp = open.remove(open.size()-1);
-            if (temp.name.equals("proc"))
+            if (temp.name.equals("proc"))  {
                 scope++;
-            else if (temp.name.equals("main"))
-                scope = 0;
+                temp.childScope = scope;
+            }
+            else if (temp.name.equals("main"))  scope = 0;
             temp.scopeID = scope;
-
-            if (temp.name.equals("proc") || temp.classifier.equals("procUserDefinedName"))
-                temp.setCorrectScope();
-
-            for (int i=temp.children.size()-1;  i>=0;   i--)
-                open.add(temp.children.get(i));
+            if (temp.name.equals("proc") || temp.classifier.equals("procUserDefinedName"))  temp.setCorrectScope();
+            for (int i=temp.children.size()-1;  i>=0;   i--) open.add(temp.children.get(i));
         }
     }
 
+    // Get nodes
+    private void populateList(List<Node> list, Node n) {
+        if (n == null) return;
+        if (n.children.isEmpty()) list.add(n);
+        for (Node child : n.children) populateList(list, child);
+    }
 
-    // Semantic Checking for Procedures
+
+    // Semantic Checking: No procedure can have the name main
     public void checkMainProcedure() throws SemanticException {
         for (int i=0;   i<tokens.size()-1;    i++)
             if (tokens.get(i).input.equals("proc") && tokens.get(i+1).input.equals("main"))
-                throw new SemanticException("Token #" + i+1 + ", Token name: main is not allowed to be used as a procedure name.");
+                throw new SemanticException("Word main is not allowed to be used as a procedure name.");
     }
 }
