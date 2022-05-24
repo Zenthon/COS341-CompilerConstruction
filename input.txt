@@ -6,9 +6,9 @@ proc a {
 },
 
 proc c {
-    return;
-},
+            return;
+        },
 
-main {
-    halt;
+main {halt
+    ;
 }

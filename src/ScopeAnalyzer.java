@@ -1,20 +1,18 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ScopeAnalyzer {
 
     private List<Token> tokens;
     private Token next;
-    Node tree;
+    private Node tree;
 
     public ScopeAnalyzer(List<Token> tokens) {
         this.tokens = new ArrayList<>(tokens);
     }
 
     // Generate the tree
-    public void generateAST() {
-        tree = parseS();
-        System.out.println("Yessir");
+    public Node generateAST() {
+        return parseS();
     }
 
     public String match(String s) {
@@ -60,7 +58,7 @@ public class ScopeAnalyzer {
         Node PD = new Node("PD", "NON-TERMINAL");
         if (next.input.equals("proc")) {
             PD.addChildren(new Node(match("proc"), "TERMINAL"));
-            PD.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
+            PD.addChildren(new Node(match("TOKEN_VAR"), "procUserDefinedName"));
             PD.addChildren(new Node(match("{"), "TERMINAL"));
             PD.addChildren(parseA());
             PD.addChildren(parseB());
@@ -329,8 +327,34 @@ public class ScopeAnalyzer {
     // Start the scope analysis
     public void startScopeAnalysis() throws SemanticException {
         checkMainProcedure();
-        generateAST();
+        tree = generateAST();
+        setScopes();
+        System.out.println("Hello");
     }
+
+    // Set the scopes
+    public void setScopes() {
+        LinkedList<Node> open = new LinkedList<>();
+        open.add(tree);
+        Node temp;
+        int scope = 0;
+
+        while (!open.isEmpty()) {
+            temp = open.remove(open.size()-1);
+            if (temp.name.equals("proc"))
+                scope++;
+            else if (temp.name.equals("main"))
+                scope = 0;
+            temp.scopeID = scope;
+
+            if (temp.name.equals("proc") || temp.classifier.equals("procUserDefinedName"))
+                temp.setCorrectScope();
+
+            for (int i=temp.children.size()-1;  i>=0;   i--)
+                open.add(temp.children.get(i));
+        }
+    }
+
 
     // Semantic Checking for Procedures
     public void checkMainProcedure() throws SemanticException {
