@@ -384,7 +384,7 @@ public class ScopeAnalyzer {
         //  Semantic checking for procedures
         checkProcedureCalls(symbolTable);
         checkProcedureDeclarations(symbolTable);
-        checkVariableUsages(symbolTable);
+//        checkVariableUsages(symbolTable);
         checkVariableDeclarations(symbolTable);
     }
 
@@ -505,13 +505,15 @@ public class ScopeAnalyzer {
         result.add(node);
     }
 
-    // Check whether variable is declared
+    // Check whether variable is used
     public void checkVariableDeclarations(Node table) throws SemanticException {
         for (Node child : table.children) {
             if (child.classifier.equals("VarDecl")) {
                 for (Node x : table.children) {
-                    if (x.classifier.equals("ProcDefs"))
+                    if (x.classifier.equals("ProcDefs")) {
                         variableInOrder(child, x);
+                        break;
+                    }
                 }
             }
         }
@@ -539,9 +541,31 @@ public class ScopeAnalyzer {
 
     }
 
-    // Check whether variable is used;
-    public void checkVariableUsages(Node table) {
+    // Check whether variable is declared;
+    public void checkVariableUsages(Node table) throws SemanticException {
+        boolean found = false;
+        for (Node child : table.children) {
+            if (child.classifier.equals("VarUsage")) {
+                Node parent =  child.parent;
+                while (parent != null) {
+                    for (Node x : parent.children) {
+                        if (x.classifier.equals("VarDecl") && x.name.equals(child.name)) {
+                            found = true;
+                            System.out.println(x.name + " " + x.classifier + " " + x.scopeID);
+                            break;
+                        }
+                    }
+                    parent = parent.parent;
+                }
+                if (!found)
+                    throw new SemanticException("Variable " + child.name + ", Scope #" + child.scopeID + " was used but not declared (APPL-DECL error)");
+                found = false;
+            }
+        }
 
+        for (Node child : table.children)
+            if (!child.children.isEmpty())
+                checkVariableUsages(child);
     }
 
     // get main node
