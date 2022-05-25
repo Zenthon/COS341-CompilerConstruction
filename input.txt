@@ -1,4 +1,12 @@
 proc x {
+    proc c {
+        return;
+    },
+
+    proc c {
+        return;
+    },
+
     x := 9;
     return;
 },

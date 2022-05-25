@@ -20,7 +20,7 @@ public class ScopeAnalyzer {
         for (List<Node> list : listNodes) {
             for (Node n : list) {
                 if (!n.children.isEmpty()) {
-                    System.out.println("----\t\t" + n.name + "\tScope: " + n.scopeID + "\t\t---");
+                    System.out.println("----\t\t" + n.name + "\tScope: " + ((n.scopeID < 0) ? "-" : n.scopeID) + "\t\t---");
                     for (Node child : n.children) {
                         if (!child.classifier.equals("TERMINAL"))
                             System.out.println("\t\tName: " + child.name + ",\tScope: " + child.scopeID + ",\tType: "+  child.classifier);
@@ -355,19 +355,16 @@ public class ScopeAnalyzer {
         for (int i=0;   i<nodes.size(); i++) {
             Node temp = nodes.get(i);
             if (temp.name.equals("proc")) nodes.get(i+1).childScope = temp.childScope;
-            if (temp.name.equals("call")) {
-                nodes.get(i+1).scopeID = temp.scopeID;
-            }
+            if (temp.name.equals("call")) nodes.get(i+1).scopeID = temp.scopeID;
+            if (temp.name.equals("]") && nodes.get(i+1).classifier.equals("UserDefinedName")) nodes.get(i+1).classifier = "ARRAY_DECL";
+            if ((temp.name.equals("num") || temp.name.equals("bool") || temp.name.equals("string")) && nodes.get(i+1).classifier.equals("UserDefinedName")) nodes.get(i+1).classifier = "VarDecl";
+            if (temp.name.equals(":=")) nodes.get(i-1).classifier = "VarUsage";
         }
 
         // Create Global Symbol table
         symbolTable = getMainNode(nodes);
         symbolTable.parent = null;
         symbolTable.scopeID = -1;
-
-//        for (Node n : nodes)
-//            if (!n.classifier.equals("TERMINAL"))
-//                System.out.println(n.name + " " + n.scopeID);
 
         // Populate global symbol table and generate inner scope tables
         populateTable(nodes, symbolTable);
@@ -378,6 +375,10 @@ public class ScopeAnalyzer {
         // Semantic checking for procedures
         checkProcedureCalls(symbolTable);
         checkProcedureDeclarations(symbolTable);
+//        checkVariableUsages(symbolTable);
+//        ch
+
+
     }
 
     // Set correct parents
@@ -486,8 +487,8 @@ public class ScopeAnalyzer {
             if (temp.scopeID == table.childScope) {
                 if (temp.name.equals(table.name) && temp.classifier.equals("ProcDefs"))
                     throw new SemanticException("Procedure name " + temp.name + ", Scope #" + temp.scopeID + " is already used by the parent");
-                if (temp.classifier.equals("ProcDefs") )
-                    checkSiblings(temp, table.children);
+                if (temp.classifier.equals("ProcDefs") || temp.classifier.equals("VarDecl") )
+                    checkSiblings(temp, table.children, temp.classifier);
                 table.children.add(nodes.remove(i));
                 if (table.children.get(table.children.size()-1).classifier.equals("ProcDefs"))
                     populateTable(nodes, table.children.get(table.children.size()-1));
@@ -504,10 +505,13 @@ public class ScopeAnalyzer {
     }
 
     // check sibling
-    private void checkSiblings(Node child, List<Node> siblings) throws SemanticException {
+    private void checkSiblings(Node child, List<Node> siblings, String c) throws SemanticException {
+        String typeError = (c.equals("ProcDefs")) ?
+                ("Procedure " + child.name + ", Scope #" + child.scopeID +" is already used by a sibling.") :
+                "[Conflicting Declaration] - Variable " + child.name + ", Scope #" + child.scopeID +" is already defined.";
         for (Node sibling : siblings)
-            if (child.name.equals(sibling.name))
-                throw new SemanticException("Procedure name " + child.name + ", Scope #" + child.scopeID + " is already used by a sibling");
+            if (child.name.equals(sibling.name) && child.classifier.equals(sibling.classifier))
+                throw new SemanticException(typeError);
     }
 
     // Set the scopes
