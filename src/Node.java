@@ -3,7 +3,7 @@ import java.util.*;
 public class Node {
 
     public String name;
-    public int scopeID;
+    public Integer scopeID;             //  Scope of the variable or function
     public int childScope;
     public String classifier;
     public Node parent;
@@ -24,13 +24,13 @@ public class Node {
     }
 
     public void setCorrectScope(String name) {
-        scopeID = getNewScope(this.parent) + 1;
+        scopeID = getNewScope(this.parent);
     }
 
     public int getNewScope(Node n) {
         if (n.parent == null)
             return n.scopeID;
-        if (n.name.equals("ProcDefs")) return n.scopeID;
+        if (n.name.equals("PCall")) return n.scopeID;
         return getNewScope(n.parent);
     }
 

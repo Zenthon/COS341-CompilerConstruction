@@ -1,20 +1,18 @@
-proc x {
+proc a {
     proc c {
+        call c;
+        x := 10;
+        y := x;
         return;
     },
-
-    proc c {
-        return;
-    },
-
-    x := 9;
+    call a;
     return;
 },
-main {
-    call x;
-    x[x] := true;
 
-    halt;
+main {
+        halt;
+
     num x;
-    arr bool[7] x;
+    bool y;
+
 }
