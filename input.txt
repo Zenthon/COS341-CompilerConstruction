@@ -1,17 +1,33 @@
 proc a {
     proc c {
-        call c;
-        x := 10;
-        y := x;
+
         return;
     },
+    call c;
+ x := 6;
     call a;
+    return;
+
+},
+
+proc b {
+    proc s {
+        call s;
+        return;
+    },
+    call b;
+
+    return;
+},
+
+proc c {
     return;
 },
 
 main {
-        halt;
-
+    y := 5;
+    call c;
+    halt;
     num x;
     bool y;
 

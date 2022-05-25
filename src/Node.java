@@ -10,6 +10,9 @@ public class Node {
     public ArrayList<Node> children = new ArrayList<>();
     public String type;
 
+    public boolean alreadySet = false;
+
+
 
     public Node(String n, String c) {
         type = "U";
