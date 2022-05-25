@@ -1,7 +1,6 @@
 import java.util.*;
 
 public class ScopeAnalyzer {
-
     private final List<Token> tokens;
     private Token next;
     private Node tree;
@@ -12,7 +11,7 @@ public class ScopeAnalyzer {
     }
 
     // Generate the tree
-    public void generateAST() {
+    private void generateAST() {
         tree=  parseS();
     }
 
@@ -56,7 +55,7 @@ public class ScopeAnalyzer {
         Node PD = new Node("PD", "NON-TERMINAL");
         if (next.input.equals("proc")) {
             PD.addChildren(new Node(match("proc"), "TERMINAL"));
-            PD.addChildren(new Node(match("TOKEN_VAR"), "procUserDefinedName"));
+            PD.addChildren(new Node(match("TOKEN_VAR"), "ProcDefs"));
             PD.addChildren(new Node(match("{"), "TERMINAL"));
             PD.addChildren(parseA());
             PD.addChildren(parseB());
@@ -198,7 +197,7 @@ public class ScopeAnalyzer {
         next = tokens.get(0);
         Node Field = new Node("Field", "NON-TERMINAL");
         if (next.tType.equals("TOKEN_VAR")) {
-            Field.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
+            Field.addChildren(new Node(match("TOKEN_VAR"), "ARRAY_USE"));
             Field.addChildren(new Node(match("["), "TERMINAL"));
             Field.addChildren(parseZ());
         }
@@ -293,9 +292,9 @@ public class ScopeAnalyzer {
     private Node parseT() {
         next = tokens.get(0);
         Node TYP = new Node("TYP", "NON-TERMINAL");
-        if (next.input.equals("string")) TYP.addChildren(new Node(match("string"), "TYP_string"));
-        if (next.input.equals("bool")) TYP.addChildren(new Node(match("bool"), "TYP_bool"));
-        if (next.input.equals("num")) TYP.addChildren(new Node(match("num"), "TYP_num"));
+        if (next.input.equals("string")) TYP.addChildren(new Node(match("string"), "STRING"));
+        if (next.input.equals("bool")) TYP.addChildren(new Node(match("bool"), "BOOL"));
+        if (next.input.equals("num")) TYP.addChildren(new Node(match("num"), "NUM"));
         return TYP;
     }
 
@@ -315,8 +314,7 @@ public class ScopeAnalyzer {
         populateList(nodes, tree);
         for (int i=0;   i<nodes.size(); i++) {
             Node temp = nodes.get(i);
-            if (temp.name.equals("proc"))
-                nodes.get(i+1).childScope = temp.childScope;
+            if (temp.name.equals("proc")) nodes.get(i+1).childScope = temp.childScope;
         }
 
         // Create Global Symbol table
@@ -327,32 +325,62 @@ public class ScopeAnalyzer {
         // Populate global symbol table and generate inner scope tables
         populateTable(nodes, symbolTable);
 
-        checkProcedureCalls(symbolTable);
+        // Semantic checking for procedures
+//        checkProcedureCalls(symbolTable);
+        checkProcedureDeclarations(symbolTable);
     }
 
     // Check procedure calls
-    private void checkProcedureCalls(Node symbolTable) throws SemanticException {
+    private void checkProcedureCalls(Node table) throws SemanticException {
         boolean isValid = false;
-        for (Node child : symbolTable.children) {
+        for (Node child : table.children) {
             if (child.classifier.equals("PCall")) {
-                if (child.name.equals(symbolTable.name))
-                    isValid = true;
-
+                if (child.name.equals(table.name)) isValid = true;
                 if (!isValid) {
-                    for (Node x : symbolTable.children) {
-                        if (x.classifier.equals("procUserDefinedName") && x.name.equals(child.name)) {
+                    for (Node x : table.children) {
+                        if (x.classifier.equals("ProcDefs") && x.name.equals(child.name)) {
                             isValid = true;
                             break;
                         }
                     }
                 }
-                if (!isValid)
-                    throw new SemanticException("Procedure " + child.name + " is not declared (APPL-DECL error)");
+                if (!isValid) throw new SemanticException("Procedure " + child.name + " is used but not declared (APPL-DECL error)");
             }
         }
+        for (Node child : table.children) checkProcedureCalls(child);
+    }
 
-        for (Node child : symbolTable.children)
-            checkProcedureCalls(child);
+    // Check procedure declarations
+    private void checkProcedureDeclarations(Node table) throws SemanticException {
+        for (Node child : table.children) {
+            if (child.classifier.equals("ProcDefs")) {
+                boolean foundUse = false;
+                for (Node x : table.children) {
+                    if (x.classifier.equals("PCall") && x.name.equals(child.name)) {
+                        foundUse = true;
+                        break;
+                    }
+                }
+                if (!foundUse) inOrder(child);
+            }
+        }
+    }
+
+    private void inOrder(Node table) throws SemanticException {
+        if (table == null) return;
+        List<Node> result = new LinkedList<>();
+        traverse(table, result);
+        boolean isUsed = false;
+
+        for (Node n : result) if (n.name.equals(table.name) && n.classifier.equals("PCall")) isUsed = true;
+        if (!isUsed) throw new SemanticException("Procedure " + table.name + " is declared but not used (DECL-APPL error)");
+        for (Node n : table.children) if (n.classifier.equals("ProcDefs")) inOrder(n);
+    }
+
+    private void traverse(Node node, List<Node> result) {
+        if (node == null) return;
+        for (Node child : node.children) traverse(child, result);
+        result.add(node);
     }
 
     // populate table
@@ -362,12 +390,12 @@ public class ScopeAnalyzer {
             if (deleted) i = 0;
             Node temp = nodes.get(i);
             if (temp.scopeID == table.childScope) {
-                if (temp.name.equals(table.name) && temp.classifier.equals("procUserDefinedName"))
+                if (temp.name.equals(table.name) && temp.classifier.equals("ProcDefs"))
                     throw new SemanticException("Procedure name " + temp.name + ", Scope #" + temp.scopeID + " is already used by the parent");
-                if (temp.classifier.equals("procUserDefinedName") )
+                if (temp.classifier.equals("ProcDefs") )
                     checkSiblings(temp, table.children);
                 table.children.add(nodes.remove(i));
-                if (table.children.get(table.children.size()-1).classifier.equals("procUserDefinedName"))
+                if (table.children.get(table.children.size()-1).classifier.equals("ProcDefs"))
                     populateTable(nodes, table.children.get(table.children.size()-1));
                 deleted = true;
             } else deleted = false;
@@ -377,8 +405,7 @@ public class ScopeAnalyzer {
     // get main node
     private Node getMainNode(List<Node> nodes) {
         for (int i=0;   i<nodes.size();     i++)
-            if (nodes.get(i).name.equals("main"))
-                return nodes.remove(i);
+            if (nodes.get(i).name.equals("main")) return nodes.remove(i);
         return null;
     }
 
@@ -404,7 +431,7 @@ public class ScopeAnalyzer {
             }
             else if (temp.name.equals("main"))  scope = 0;
             temp.scopeID = scope;
-            if (temp.name.equals("proc") || temp.classifier.equals("procUserDefinedName"))  temp.setCorrectScope();
+            if (temp.name.equals("proc") || temp.classifier.equals("ProcDefs"))  temp.setCorrectScope();
             for (int i=temp.children.size()-1;  i>=0;   i--) open.add(temp.children.get(i));
         }
     }

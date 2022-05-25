@@ -1,23 +1,21 @@
 proc f {
-    proc g {
-        proc f {
+    proc i {
+        proc h {
+            proc j {
+            call f;
+            return;
+            },
             return;
         },
-        call f;
+        call i;
+        call j;
         return;
     },
-
-    proc h {
-        proc f {
-            return;
-        },
-        return;
-    },
+    call f;
     return;
 },
 
 main {
-    call f;
     halt;
     num x;
 }
