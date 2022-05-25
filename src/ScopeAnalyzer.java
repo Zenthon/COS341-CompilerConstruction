@@ -5,6 +5,7 @@ public class ScopeAnalyzer {
     private Token next;
     private Node tree;
     private Node symbolTable;
+    private boolean isValid = false;
 
     public ScopeAnalyzer(List<Token> tokens) {
         this.tokens = new ArrayList<>(tokens);
@@ -30,6 +31,7 @@ public class ScopeAnalyzer {
             System.out.println();
         }
     }
+
     public List<List<Node>> printTable(Node n) {
         List<List<Node>> result = new ArrayList<>();
         if (n == null) return result;
@@ -359,12 +361,19 @@ public class ScopeAnalyzer {
             if (temp.name.equals("]") && nodes.get(i+1).classifier.equals("UserDefinedName")) nodes.get(i+1).classifier = "ARRAY_DECL";
             if ((temp.name.equals("num") || temp.name.equals("bool") || temp.name.equals("string")) && nodes.get(i+1).classifier.equals("UserDefinedName")) nodes.get(i+1).classifier = "VarDecl";
             if (temp.name.equals(":=")) nodes.get(i-1).classifier = "VarUsage";
+            if (temp.name.equals("[") && nodes.get(i+1).classifier.equals("UserDefinedName")) nodes.get(i+1).classifier = "VarUsage";
         }
+
+        // Remove Non variables
+        nodes.removeIf(node -> node.classifier.equals("TERMINAL"));
+
 
         // Create Global Symbol table
         symbolTable = getMainNode(nodes);
         symbolTable.parent = null;
         symbolTable.scopeID = -1;
+
+        nodes.sort((o1, o2) -> o1.scopeID.compareTo(o2.scopeID));
 
         // Populate global symbol table and generate inner scope tables
         populateTable(nodes, symbolTable);
@@ -372,42 +381,60 @@ public class ScopeAnalyzer {
         // Set correct parents for symbol table
         setParent(symbolTable);
 
-        // Semantic checking for procedures
+        //  Semantic checking for procedures
         checkProcedureCalls(symbolTable);
         checkProcedureDeclarations(symbolTable);
-//        checkVariableUsages(symbolTable);
-//        ch
-
-
+        checkVariableUsages(symbolTable);
+        checkVariableDeclarations(symbolTable);
     }
 
-    // Set correct parents
-    void setParent(Node n) {
-        List<List<Node>> result = new ArrayList<>();
-        if (n == null) return;
-
+    // populate table
+    void populateTable(List<Node> nodes, Node table) throws SemanticException {
+        List<List<Integer>> result = new ArrayList<>();
+        boolean deleted = false;
         Queue<Node> queue = new LinkedList<>();
-        queue.offer(n);
+        queue.offer(table);
         while (!queue.isEmpty()) {
             int size = queue.size();
             List<Node> subList = new ArrayList<>();
-            for (int i = 0; i < size; i++) {
+
                 Node current = queue.poll();
+                for (int x=0;   x<=nodes.size() &&!nodes.isEmpty();     x++) {
+                    if (deleted) {
+                        x =0;
+                        deleted = false;
+                    }
+                    Node temp = nodes.get(x);
+                    if (temp.scopeID == current.childScope) {
+                        if (temp.name.equals(current.name) && temp.classifier.equals("ProcDefs"))
+                            throw new SemanticException("Procedure name " + temp.name + ", Scope #" + temp.scopeID + " is already used by the parent");
+                        if (temp.classifier.equals("ProcDefs") || temp.classifier.equals("VarDecl"))
+                            checkSiblings(temp, current.children, temp.classifier);
+                        current.children.add(nodes.remove(x));
+                        deleted = true;
+                    } else break;
+                }
                 subList.add(current);
                 if (current.children != null) {
                     for (Node child : current.children) {
-                        child.parent = current;
                         queue.offer(child);
                     }
                 }
             }
-            result.add(subList);
-        }
+    }
+
+    //  Set the parent
+    private void setParent(Node table) {
+        for (Node child : table.children)
+            child.parent = table;
+
+        for (Node child : table.children)
+            if (!child.children.isEmpty())
+                setParent(child);
     }
 
     // Check procedure calls
     private void checkProcedureCalls(Node table) throws SemanticException {
-        boolean isValid = false;
         for (Node child : table.children) {
             if (child.classifier.equals("PCall")) {
                 if (child.name.equals(table.name)) isValid = true;
@@ -420,15 +447,16 @@ public class ScopeAnalyzer {
                     }
                 }
                 if (!isValid) throw new SemanticException("Procedure " + child.name + " is called but not declared (APPL-DECL error)");
+                isValid = false;
             }
         }
-        for (Node child : table.children) checkProcedureCalls(child);
+        for (Node child : table.children)
+            if (child.children.size() > 0) checkProcedureCalls(child);
     }
 
     // Check procedure declarations
     private void checkProcedureDeclarations(Node table) throws SemanticException {
         List<List<Node>> result = new ArrayList<>();
-        if (table == null) return;
 
         Queue<Node> queue = new LinkedList<>();
         queue.offer(table);
@@ -437,7 +465,7 @@ public class ScopeAnalyzer {
             List<Node> subList = new ArrayList<>();
             for (int i = 0; i < size; i++) {
                 Node current = queue.poll();
-                if (!current.name.equals("main") && current.classifier.equals("ProcDefs"))
+                if (current.classifier.equals("ProcDefs"))
                     inOrder(current);
                 subList.add(current);
                 if (current.children != null) {
@@ -448,7 +476,6 @@ public class ScopeAnalyzer {
             }
             result.add(subList);
         }
-
     }
 
     private void inOrder(Node table) throws SemanticException {
@@ -478,23 +505,43 @@ public class ScopeAnalyzer {
         result.add(node);
     }
 
-    // populate table
-    void populateTable(List<Node> nodes, Node table) throws SemanticException {
-        boolean deleted = false;
-        for (int i=0;   i<nodes.size();     i++) {
-            if (deleted) i = 0;
-            Node temp = nodes.get(i);
-            if (temp.scopeID == table.childScope) {
-                if (temp.name.equals(table.name) && temp.classifier.equals("ProcDefs"))
-                    throw new SemanticException("Procedure name " + temp.name + ", Scope #" + temp.scopeID + " is already used by the parent");
-                if (temp.classifier.equals("ProcDefs") || temp.classifier.equals("VarDecl") )
-                    checkSiblings(temp, table.children, temp.classifier);
-                table.children.add(nodes.remove(i));
-                if (table.children.get(table.children.size()-1).classifier.equals("ProcDefs"))
-                    populateTable(nodes, table.children.get(table.children.size()-1));
-                deleted = true;
-            } else deleted = false;
+    // Check whether variable is declared
+    public void checkVariableDeclarations(Node table) throws SemanticException {
+        for (Node child : table.children) {
+            if (child.classifier.equals("VarDecl")) {
+                for (Node x : table.children) {
+                    if (x.classifier.equals("ProcDefs"))
+                        variableInOrder(child, x);
+                }
+            }
         }
+    }
+
+    private void variableInOrder(Node table, Node xx) throws SemanticException {
+        if (table == null) return;
+        List<Node> result = new LinkedList<>();
+        traverse(xx, result);
+        boolean isUsed = false;
+
+        for (Node n : result) if (n.name.equals(table.name) && n.classifier.equals("VarUsage")) isUsed = true;
+
+        if (!isUsed) {
+            for (Node x : table.parent.children) {
+                if (x.classifier.equals("VarUsage") && x.name.equals(table.name)) {
+                    isUsed = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isUsed) throw new SemanticException("Variable " + table.name + " is declared but not used (DECL-APPL error)");
+        for (Node n : table.children) if (n.classifier.equals("VarDecl")) inOrder(n);
+
+    }
+
+    // Check whether variable is used;
+    public void checkVariableUsages(Node table) {
+
     }
 
     // get main node
@@ -506,9 +553,7 @@ public class ScopeAnalyzer {
 
     // check sibling
     private void checkSiblings(Node child, List<Node> siblings, String c) throws SemanticException {
-        String typeError = (c.equals("ProcDefs")) ?
-                ("Procedure " + child.name + ", Scope #" + child.scopeID +" is already used by a sibling.") :
-                "[Conflicting Declaration] - Variable " + child.name + ", Scope #" + child.scopeID +" is already defined.";
+        String typeError = (c.equals("ProcDefs")) ? "Procedure " + child.name + ", Scope #" + child.scopeID +" is already used by a sibling." : "[Conflicting Declaration] - Variable " + child.name + ", Scope #" + child.scopeID +" is already declared.";
         for (Node sibling : siblings)
             if (child.name.equals(sibling.name) && child.classifier.equals(sibling.classifier))
                 throw new SemanticException(typeError);

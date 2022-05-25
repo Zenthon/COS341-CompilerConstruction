@@ -21,7 +21,7 @@ public class Main {
             // Start the scope analyser
             ScopeAnalyzer scopeAnalyzer = new ScopeAnalyzer(lexer.tokens);
             scopeAnalyzer.startScopeAnalysis();
-            scopeAnalyzer.print();
+//            scopeAnalyzer.print();
 
         }
         catch (IOException e) {
