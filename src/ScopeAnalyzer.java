@@ -15,6 +15,44 @@ public class ScopeAnalyzer {
         tree=  parseS();
     }
 
+    public void print() {
+        List<List<Node>> listNodes = printTable(symbolTable);
+        for (List<Node> list : listNodes) {
+            for (Node n : list) {
+                if (!n.children.isEmpty()) {
+                    System.out.println("----\t\t" + n.name + "\tScope: " + n.scopeID + "\t\t---");
+                    for (Node child : n.children) {
+                        if (!child.classifier.equals("TERMINAL"))
+                            System.out.println("\t\tName: " + child.name + ",\tScope: " + child.scopeID + ",\tType: "+  child.classifier);
+                    }
+                }
+            }
+            System.out.println();
+        }
+    }
+    public List<List<Node>> printTable(Node n) {
+        List<List<Node>> result = new ArrayList<>();
+        if (n == null) return result;
+
+        Queue<Node> queue = new LinkedList<>();
+        queue.offer(n);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Node> subList = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                Node current = queue.poll();
+                subList.add(current);
+                if (current.children != null) {
+                    for (Node child : current.children) {
+                        queue.offer(child);
+                    }
+                }
+            }
+            result.add(subList);
+        }
+        return result;
+    }
+
     private String match(String s) {
         Token lookAhead = tokens.remove(0);
         if (lookAhead.tType.equals(s)) return lookAhead.input;
@@ -159,7 +197,7 @@ public class ScopeAnalyzer {
     private Node parseJ() {
         next = tokens.get(0);
         Node LHS = new Node("LHS", "NON-TERMINAL");
-        if (next.input.equals("output"))   LHS.addChildren(new Node(match("output"), "TERMINAL"));
+        if (next.input.equals("output"))   LHS.addChildren(new Node(match("output"), "OUTPUT_KEYWORD"));
         else if (next.tType.equals("TOKEN_VAR") && tokens.get(1).input.equals("["))  LHS.addChildren(parseN());
         if (next.tType.equals("TOKEN_VAR")) LHS.addChildren(parseM());
         return LHS;
@@ -189,7 +227,7 @@ public class ScopeAnalyzer {
     private Node parseM() {
         next = tokens.get(0);
         Node Var = new Node("Var", "NON-TERMINAL");
-        if(next.tType.equals("TOKEN_VAR")) Var.addChildren(new Node(match("TOKEN_VAR"), "TERMINAL"));
+        if(next.tType.equals("TOKEN_VAR")) Var.addChildren(new Node(match("TOKEN_VAR"), "UserDefinedName"));
         return Var;
     }
 
@@ -220,10 +258,10 @@ public class ScopeAnalyzer {
 
     private Node parseO() {
         next = tokens.get(0);
-        Node Const = new Node("Const", "TERMINAL");
-        if (next.tType.equals("TOKEN_SHORTSTRING")) Const.addChildren(new Node(match("TOKEN_SHORTSTRING"), "TERMINAL"));
-        if (next.tType.equals("TOKEN_NUMBER")) Const.addChildren(new Node(match("TOKEN_NUMBER"), "TERMINAL"));
-        if (next.input.equals("true") || next.input.equals("false")) Const.addChildren(new Node(match(next.input), "TERMINAL"));
+        Node Const = new Node("Const", "NON-TERMINAL");
+        if (next.tType.equals("TOKEN_SHORTSTRING")) Const.addChildren(new Node(match("TOKEN_SHORTSTRING"), "SHORTSTRING"));
+        if (next.tType.equals("TOKEN_NUMBER")) Const.addChildren(new Node(match("TOKEN_NUMBER"), "NUMBER"));
+        if (next.input.equals("true") || next.input.equals("false")) Const.addChildren(new Node(match(next.input), "TYPE"));
         return Const;
     }
 
@@ -312,9 +350,14 @@ public class ScopeAnalyzer {
         // Convert tree into list of terminal tokens
         List<Node> nodes = new LinkedList<>();
         populateList(nodes, tree);
+
+
         for (int i=0;   i<nodes.size(); i++) {
             Node temp = nodes.get(i);
             if (temp.name.equals("proc")) nodes.get(i+1).childScope = temp.childScope;
+            if (temp.name.equals("call")) {
+                nodes.get(i+1).scopeID = temp.scopeID;
+            }
         }
 
         // Create Global Symbol table
@@ -322,12 +365,43 @@ public class ScopeAnalyzer {
         symbolTable.parent = null;
         symbolTable.scopeID = -1;
 
+//        for (Node n : nodes)
+//            if (!n.classifier.equals("TERMINAL"))
+//                System.out.println(n.name + " " + n.scopeID);
+
         // Populate global symbol table and generate inner scope tables
         populateTable(nodes, symbolTable);
 
+        // Set correct parents for symbol table
+        setParent(symbolTable);
+
         // Semantic checking for procedures
-//        checkProcedureCalls(symbolTable);
+        checkProcedureCalls(symbolTable);
         checkProcedureDeclarations(symbolTable);
+    }
+
+    // Set correct parents
+    void setParent(Node n) {
+        List<List<Node>> result = new ArrayList<>();
+        if (n == null) return;
+
+        Queue<Node> queue = new LinkedList<>();
+        queue.offer(n);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Node> subList = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                Node current = queue.poll();
+                subList.add(current);
+                if (current.children != null) {
+                    for (Node child : current.children) {
+                        child.parent = current;
+                        queue.offer(child);
+                    }
+                }
+            }
+            result.add(subList);
+        }
     }
 
     // Check procedure calls
@@ -344,7 +418,7 @@ public class ScopeAnalyzer {
                         }
                     }
                 }
-                if (!isValid) throw new SemanticException("Procedure " + child.name + " is used but not declared (APPL-DECL error)");
+                if (!isValid) throw new SemanticException("Procedure " + child.name + " is called but not declared (APPL-DECL error)");
             }
         }
         for (Node child : table.children) checkProcedureCalls(child);
@@ -352,18 +426,28 @@ public class ScopeAnalyzer {
 
     // Check procedure declarations
     private void checkProcedureDeclarations(Node table) throws SemanticException {
-        for (Node child : table.children) {
-            if (child.classifier.equals("ProcDefs")) {
-                boolean foundUse = false;
-                for (Node x : table.children) {
-                    if (x.classifier.equals("PCall") && x.name.equals(child.name)) {
-                        foundUse = true;
-                        break;
+        List<List<Node>> result = new ArrayList<>();
+        if (table == null) return;
+
+        Queue<Node> queue = new LinkedList<>();
+        queue.offer(table);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Node> subList = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                Node current = queue.poll();
+                if (!current.name.equals("main") && current.classifier.equals("ProcDefs"))
+                    inOrder(current);
+                subList.add(current);
+                if (current.children != null) {
+                    for (Node child : current.children) {
+                        queue.offer(child);
                     }
                 }
-                if (!foundUse) inOrder(child);
             }
+            result.add(subList);
         }
+
     }
 
     private void inOrder(Node table) throws SemanticException {
@@ -373,6 +457,16 @@ public class ScopeAnalyzer {
         boolean isUsed = false;
 
         for (Node n : result) if (n.name.equals(table.name) && n.classifier.equals("PCall")) isUsed = true;
+
+        if (!isUsed) {
+            for (Node x : table.parent.children) {
+                if (x.classifier.equals("PCall") && x.name.equals(table.name)) {
+                    isUsed = true;
+                    break;
+                }
+            }
+        }
+
         if (!isUsed) throw new SemanticException("Procedure " + table.name + " is declared but not used (DECL-APPL error)");
         for (Node n : table.children) if (n.classifier.equals("ProcDefs")) inOrder(n);
     }
@@ -423,14 +517,24 @@ public class ScopeAnalyzer {
         Node temp;
         int scope = 0;
 
+        boolean flag = false;
         while (!open.isEmpty()) {
             temp = open.remove(open.size()-1);
-            if (temp.name.equals("proc"))  {
+            if (temp.name.equals(",") ) {
+                scope --;
+                flag = true;
+            }
+            else if (temp.name.equals("proc"))  {
                 scope++;
+                if (flag) {
+                    scope++;
+                    flag = false;
+                }
                 temp.childScope = scope;
             }
             else if (temp.name.equals("main"))  scope = 0;
             temp.scopeID = scope;
+            if (temp.name.equals("call")) temp.setCorrectScope("");
             if (temp.name.equals("proc") || temp.classifier.equals("ProcDefs"))  temp.setCorrectScope();
             for (int i=temp.children.size()-1;  i>=0;   i--) open.add(temp.children.get(i));
         }

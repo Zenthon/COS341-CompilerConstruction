@@ -23,6 +23,17 @@ public class Node {
         scopeID = getScope(this.parent);
     }
 
+    public void setCorrectScope(String name) {
+        scopeID = getNewScope(this.parent) + 1;
+    }
+
+    public int getNewScope(Node n) {
+        if (n.parent == null)
+            return n.scopeID;
+        if (n.name.equals("ProcDefs")) return n.scopeID;
+        return getNewScope(n.parent);
+    }
+
     public int getScope(Node n) {
         if (n.name.equals("ProcDefs") && !n.parent.name.equals("ProcDefs")) return n.scopeID;
         return getScope(n.parent);

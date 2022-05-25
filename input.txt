@@ -1,21 +1,12 @@
-proc f {
-    proc i {
-        proc h {
-            proc j {
-            call f;
-            return;
-            },
-            return;
-        },
-        call i;
-        call j;
-        return;
-    },
-    call f;
+proc x {
+    x := 9;
     return;
 },
-
 main {
+    call x;
+    x[x] := true;
+
     halt;
     num x;
+    arr bool[7] x;
 }
